@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import {parserFile,sortImport} from "./parser/parserFile";
+import {parserFile} from "./parser/parserFile";
 
 // 执行格式化一个vue文件
 let formatOneFile = vscode.commands.registerCommand(
@@ -14,9 +14,9 @@ let formatOneFile = vscode.commands.registerCommand(
       vscode.window.showErrorMessage("当前文件不是vue文件");
     }
 	const scope = parserFile(res!.document)
-	if(scope.import.length){
-		sortImport(scope.import)
-	}
+	// if(scope.import.length){
+	// 	sortImport(scope.import)
+	// }
 	console.log(scope)
 	// if (scope.import.length) {
 	// 	sortImport(scope.import)
