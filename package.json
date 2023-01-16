@@ -3,6 +3,7 @@
   "displayName": "format-you-code",
   "description": "",
   "version": "0.0.1",
+  "azureCode": "hcz565yd55yii55qyk7654o5npzwutqvrwcktp2ckep6rc2fahqa",
   "engines": {
     "vscode": "^1.74.0"
   },
@@ -10,14 +11,32 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:format-you-code.helloWorld"
+    "onCommand:format-you-code.file",
+    "onLanguage:vue"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "format-you-code.helloWorld",
-        "title": "Hello World"
+        "command": "format-you-code.file",
+        "title": "format"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "when": "resourceLangId == vue",
+          "command": "format-you-code.file",
+          "group": "1_modification"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "format-you-code.file",
+        "when": "resourceLangId == vue",
+        "key": "ctrl+shift+alt+f",
+        "mac": "cmd+shift+alt+f"
       }
     ]
   },

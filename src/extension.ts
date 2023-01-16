@@ -1,25 +1,40 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
+import {parserFile,sortImport} from "./parser/parserFile";
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
+// 执行格式化一个vue文件
+let formatOneFile = vscode.commands.registerCommand(
+  "format-you-code.file",
+  async () => {
+    await vscode.commands.executeCommand("editor.action.formatDocument");
+    const res = vscode.window.activeTextEditor;
+    if (!res!.document) {
+      return;
+    }
+    if (res!.document.languageId !== "vue") {
+      vscode.window.showErrorMessage("当前文件不是vue文件");
+    }
+	const scope = parserFile(res!.document)
+	if(scope.import.length){
+		sortImport(scope.import)
+	}
+	console.log(scope)
+	// if (scope.import.length) {
+	// 	sortImport(scope.import)
+	// 		.then(() => {
+	// 			resolve(script)
+	// 		})
+	// 		.catch((e) => {
+	// 			reject(e)
+	// 		})
+	// }
+    vscode.window.showErrorMessage("format-one-file");
+    // parserFile();
+  }
+);
+
 export function activate(context: vscode.ExtensionContext) {
-
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "format-you-code" is now active!');
-
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('format-you-code.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from format-you-code!');
-	});
-
-	context.subscriptions.push(disposable);
+  // The command has been defined in the package.json file
+  context.subscriptions.push(formatOneFile);
 }
 
 // This method is called when your extension is deactivated
