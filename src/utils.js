@@ -215,7 +215,7 @@ const sort = () => {
         .then(() => {
             return Promise.resolve(scriptBlock())
         })
-        .then((script:any) => {
+        .then((script) => {
             return new Promise((resolve, reject) => {
                 if (script.import.length) {
                     sortImport(script.import)

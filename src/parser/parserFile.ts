@@ -28,12 +28,26 @@ const parserFile = (document: any): scopeType => {
     //检测各种开始标签
     if (!pointer.scriptModuleStart && text.match(/<script.*>/i)) {
       pointer.scriptModuleStart = true;
+      continue;
     } else if (!pointer.templateModuleStart && text.match(/<template.*>/i)) {
       pointer.templateModuleCount++;
       pointer.templateModuleStart = true;
     } else if (!pointer.styleModuleStart && text.match(/<style.*>/i)) {
       pointer.styleModuleCount++;
       pointer.styleModuleStart = true;
+    }
+    //检测各种结束标签
+    if (pointer.scriptModuleStart && text.match(/<\/script.*>/i)) {
+      pointer.scriptModuleStart = false;
+      continue;
+    } else if (pointer.templateModuleStart && text.match(/<\/template.*>/i)) {
+      if (pointer.templateModuleCount >= 0) {
+        pointer.templateModuleCount--;
+      } else {
+        pointer.templateModuleStart = false;
+      }
+    } else if (pointer.styleModuleStart && text.match(/<\/style.*>/i)) {
+      pointer.styleModuleStart = false;
     }
     //对每一行进行分类
     if (pointer.templateModuleStart) {
@@ -51,18 +65,6 @@ const parserFile = (document: any): scopeType => {
         scope["style"][pointer.styleModuleCount] = [];
       }
       scope["style"][pointer.styleModuleCount].push({ text, lineNumber });
-    }
-    //检测各种结束标签
-    if (pointer.scriptModuleStart && text.match(/<\/script.*>/i)) {
-      pointer.scriptModuleStart = false;
-    } else if (pointer.templateModuleStart && text.match(/<\/template.*>/i)) {
-      if (pointer.templateModuleCount >= 0) {
-        pointer.templateModuleCount--;
-      }else{
-        pointer.templateModuleStart = false;
-      }
-    } else if (pointer.styleModuleStart && text.match(/<\/style.*>/i)) {
-      pointer.styleModuleStart = false;
     }
   }
   return scope;
