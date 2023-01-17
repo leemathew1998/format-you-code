@@ -2,6 +2,7 @@ let postcss = require("postcss");
 let cssnano = require("cssnano");
 const vscode = require("vscode");
 import { TextEditorEdit } from "vscode";
+import patchAstCss from "../patch/patchAst-Css";
 
 const sortCss = async (cssModules, ast) => {
   //style标签不止一个，需要循环处理
@@ -19,7 +20,7 @@ const sortCss = async (cssModules, ast) => {
         to: undefined,
       });
       const result2 = await postcss.parse(cssText).toResult();
-    //   console.log(template);
+      patchAstCss(result2.root.toJSON(), ast);
 
       return vscode.window.activeTextEditor.edit((builder: TextEditorEdit) => {
         // let start = new vscode.Position(range.startLine, range.startCharacter);
