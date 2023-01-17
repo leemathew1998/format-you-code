@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { scopeType } from "../type";
+const compiler = require("vue-template-compiler");
 const parserFile = (document: any): scopeType => {
   const pointer = {
     position: 0,
@@ -13,6 +14,7 @@ const parserFile = (document: any): scopeType => {
 
   const scope: scopeType = {
     template: [],
+    ast: null,
     script: {
       import: [],
       module: [],
@@ -29,22 +31,24 @@ const parserFile = (document: any): scopeType => {
     if (!pointer.scriptModuleStart && text.match(/<script.*>/i)) {
       pointer.scriptModuleStart = true;
       continue;
-    } else if (!pointer.templateModuleStart && text.match(/<template.*>/i)) {
+    } else if (text.match(/<template.*>/i)) {
       pointer.templateModuleCount++;
       pointer.templateModuleStart = true;
     } else if (!pointer.styleModuleStart && text.match(/<style.*>/i)) {
       pointer.styleModuleCount++;
       pointer.styleModuleStart = true;
+      continue; //style标签不需要加入scope
     }
     //检测各种结束标签
     if (pointer.scriptModuleStart && text.match(/<\/script.*>/i)) {
       pointer.scriptModuleStart = false;
       continue;
     } else if (pointer.templateModuleStart && text.match(/<\/template.*>/i)) {
-      if (pointer.templateModuleCount >= 0) {
+      if (pointer.templateModuleCount > 0) {
         pointer.templateModuleCount--;
       } else {
         pointer.templateModuleStart = false;
+        scope["template"].push({ text, lineNumber });
       }
     } else if (pointer.styleModuleStart && text.match(/<\/style.*>/i)) {
       pointer.styleModuleStart = false;
@@ -67,7 +71,8 @@ const parserFile = (document: any): scopeType => {
       scope["style"][pointer.styleModuleCount].push({ text, lineNumber });
     }
   }
+  scope.ast = compiler.compile(scope.template.map(item=>item.text).join("\n"));
   return scope;
 };
 
-export { parserFile };
+export default parserFile;

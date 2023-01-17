@@ -10,6 +10,7 @@ interface sortImportTypeBase {
 
 export interface scopeType {
   template: Array<{ text: string; lineNumber: number }>;
+  ast: any;
   script: scriptTypeBase;
   style: Array<Array<{ text: string; lineNumber: number }>>;
 }

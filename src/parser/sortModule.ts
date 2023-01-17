@@ -108,7 +108,6 @@ const sortModule = (lines) => {
       return out;
     }, [])
     .join("\n");
-  console.log(res, range);
   return vscode.window.activeTextEditor.edit((builder: TextEditorEdit) => {
     //先进行删除，然后在进行添加
     let start = new vscode.Position(range.startLine, range.startCharacter);

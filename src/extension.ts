@@ -1,7 +1,8 @@
 import * as vscode from "vscode";
-import { parserFile } from "./parser/parserFile";
+import parserFile from "./parser/parserFile";
 import sortImport from "./parser/sortImport";
 import sortModule from "./parser/sortModule";
+import sortCss from "./parser/sortCss";
 
 // 执行格式化一个vue文件
 let formatOneFile = vscode.commands.registerCommand(
@@ -21,6 +22,9 @@ let formatOneFile = vscode.commands.registerCommand(
     }
     if (scope.script.module.length > 2) {
       await sortModule(scope.script.module.slice(1, -1));
+    }
+    if (scope.style.length) {
+      await sortCss(scope.style,scope.ast);
     }
 
     vscode.window.showInformationMessage("format-one-file");

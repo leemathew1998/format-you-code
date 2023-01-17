@@ -1,5 +1,4 @@
 const vscode = require("vscode");
-import { start } from "repl";
 import { TextEditorEdit } from "vscode";
 import { sortImportType } from "../type";
 import { mergeSameImport } from "../utils/sortImport";
