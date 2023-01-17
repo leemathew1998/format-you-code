@@ -1,4 +1,6 @@
 const vscode = require("vscode");
+import { start } from "repl";
+import { TextEditorEdit } from "vscode";
 import { sortImportType } from "../type";
 import { mergeSameImport } from "../utils/sortImport";
 const sortImport = (lines: any) => {
@@ -54,14 +56,11 @@ const sortImport = (lines: any) => {
     return out;
   }, chunkObj);
   mergeSameImport(chunk);
-  return vscode.window.activeTextEditor.edit((builder:any) => {
+  return vscode.window.activeTextEditor.edit((builder: TextEditorEdit) => {
+    let start = new vscode.Position(range.startLine, range.startCharacter);
+    let end = new vscode.Position(range.endLine, range.endCharacter);
     builder.replace(
-      new vscode.Range(
-        range.startLine,
-        range.startCharacter,
-        range.endLine,
-        range.endCharacter
-      ),
+      new vscode.Range(start, end),
       [
         ...chunk.global.lib.sort(),
         ...chunk.global.mixin.sort(),

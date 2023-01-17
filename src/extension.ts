@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
-import {parserFile} from "./parser/parserFile";
+import { parserFile } from "./parser/parserFile";
 import sortImport from "./parser/sortImport";
+import sortModule from "./parser/sortModule";
 
 // 执行格式化一个vue文件
 let formatOneFile = vscode.commands.registerCommand(
@@ -14,22 +15,15 @@ let formatOneFile = vscode.commands.registerCommand(
     if (res!.document.languageId !== "vue") {
       vscode.window.showErrorMessage("当前文件不是vue文件");
     }
-	const scope = parserFile(res!.document)
-	if(scope.script.import.length){
-		sortImport(scope.script.import)
-	}
-	
-	// if (scope.import.length) {
-	// 	sortImport(scope.import)
-	// 		.then(() => {
-	// 			resolve(script)
-	// 		})
-	// 		.catch((e) => {
-	// 			reject(e)
-	// 		})
-	// }
-    vscode.window.showErrorMessage("format-one-file");
-    // parserFile();
+    const scope = parserFile(res!.document);
+    if (scope.script.import.length) {
+      await sortImport(scope.script.import);
+    }
+    if (scope.script.module.length > 2) {
+      await sortModule(scope.script.module.slice(1, -1));
+    }
+
+    vscode.window.showInformationMessage("format-one-file");
   }
 );
 
@@ -37,6 +31,3 @@ export function activate(context: vscode.ExtensionContext) {
   // The command has been defined in the package.json file
   context.subscriptions.push(formatOneFile);
 }
-
-// This method is called when your extension is deactivated
-export function deactivate() {}
