@@ -21,3 +21,8 @@ export interface sortImportType {
   local: sortImportTypeBase;
   other: Array<string>;
 }
+
+export interface sortCssType {
+  prop:string;
+  value:string;
+}

@@ -15,21 +15,22 @@ const sortCss = async (cssModules, ast) => {
         endCharacter: cssModules[i][cssModules[i].length - 1].text.length,
       };
       const cssText = cssModules[i].map((item) => item.text).join("\n");
-      const result = await postcss(cssnano).process(cssText, {
+      //把所有css文本拼接起来，然后用postcss处理
+      const cssTextFromPostcss = await postcss.parse(cssText).toResult();
+      //core code, patch ast
+      let resultCssString = patchAstCss(cssTextFromPostcss.root.toJSON(), ast);
+      let resultCssFromNano = await postcss(cssnano).process(resultCssString, {
         from: undefined,
         to: undefined,
       });
-      const result2 = await postcss.parse(cssText).toResult();
-      patchAstCss(result2.root.toJSON(), ast);
-
       return vscode.window.activeTextEditor.edit((builder: TextEditorEdit) => {
-        // let start = new vscode.Position(range.startLine, range.startCharacter);
-        // let end = new vscode.Position(range.endLine, range.endCharacter);
-        // builder.delete(new vscode.Range(start, end));
-        // builder.insert(
-        //   new vscode.Position(range.startLine, range.startCharacter),
-        //   result.css
-        // );
+        let start = new vscode.Position(range.startLine, range.startCharacter);
+        let end = new vscode.Position(range.endLine, range.endCharacter);
+        builder.delete(new vscode.Range(start, end));
+        builder.insert(
+          new vscode.Position(range.startLine, range.startCharacter),
+          resultCssFromNano.css
+        );
       });
     }
   }

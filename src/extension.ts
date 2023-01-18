@@ -24,9 +24,9 @@ let formatOneFile = vscode.commands.registerCommand(
       await sortModule(scope.script.module.slice(1, -1));
     }
     if (scope.style.length) {
-      await sortCss(scope.style,scope.ast.ast);
+      await sortCss(scope.style,scope.template);
     }
-
+    await vscode.commands.executeCommand("editor.action.formatDocument");
     vscode.window.showInformationMessage("format-one-file");
   }
 );

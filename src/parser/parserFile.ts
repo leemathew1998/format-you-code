@@ -71,7 +71,7 @@ const parserFile = (document: any): scopeType => {
       scope["style"][pointer.styleModuleCount].push({ text, lineNumber });
     }
   }
-  scope.ast = compiler.compile(scope.template.map(item=>item.text).join("\n"));
+  // scope.ast = compiler.compile(scope.template.map(item=>item.text).join("\n"));
   return scope;
 };
 
