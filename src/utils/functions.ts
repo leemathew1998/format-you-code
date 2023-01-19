@@ -29,87 +29,27 @@ const flatHtmlNodesFunc = (item, flatHtmlNodes) => {
   if (classResult) {
     classResult.forEach((oneMatch) => {
       //示例：class="container",需要去掉class="和"
-      oneMatch = oneMatch.replace(/class=["|']/g, "").replace(/["|']/g, "").split(" ").map(i=>`.${i}`).join(" ");
+      oneMatch = oneMatch
+        .replace(/class=["|']/g, "")
+        .replace(/["|']/g, "")
+        .split(" ")
+        .map((i) => `.${i}`)
+        .join(" ");
       flatHtmlNodes.set(oneMatch, ".");
     });
   }
   if (idResult) {
     idResult.forEach((oneMatch) => {
       //示例：id="container",需要去掉id="和"
-      oneMatch = oneMatch.replace(/id=["|']/g, "").replace(/["|']/g, "").split(" ").map(i=>`#${i}`).join(" ");
+      oneMatch = oneMatch
+        .replace(/id=["|']/g, "")
+        .replace(/["|']/g, "")
+        .split(" ")
+        .map((i) => `#${i}`)
+        .join(" ");
       flatHtmlNodes.set(oneMatch, "#");
     });
   }
 };
 
 export { flatCssNodesFunc, flatHtmlNodesFunc };
-
-/**
- * 
- * 
- * 
- * 
- .container {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  .header {
-    width: 100%;
-    height: 50px;
-    background-color: #f00;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    #title {
-      color: #fff;
-      font-size: 20px;
-    }
-  }
-  .main {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    .def {
-      width: 100%;
-      height: 50%;
-      background-color: #0f0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      #def {
-        color: #fff;
-        font-size: 20px;
-      }
-    }
-    .mark {
-      width: 100%;
-      height: 50%;
-      background-color: #00f;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      #mark {
-        color: #fff;
-        font-size: 20px;
-      }
-    }
-  }
-  .footer {
-    width: 100%;
-    height: 50px;
-    background-color: #f0f;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    #footer {
-      color: #fff;
-      font-size: 20px;
-    }
-  }
-}
- * 
- * 
- * 
- */

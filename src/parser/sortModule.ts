@@ -1,7 +1,7 @@
 import { TextEditorEdit } from "vscode";
 
 const vscode = require("vscode");
-const sortModule = (lines) => {
+const sortModule = async (lines) => {
   const range = {
     startLine: -1,
     startCharacter: 0,
@@ -108,12 +108,13 @@ const sortModule = (lines) => {
       return out;
     }, [])
     .join("\n");
-  return vscode.window.activeTextEditor.edit((builder: TextEditorEdit) => {
+  await vscode.window.activeTextEditor.edit((builder: TextEditorEdit) => {
     //先进行删除，然后在进行添加
     let start = new vscode.Position(range.startLine, range.startCharacter);
     let end = new vscode.Position(range.endLine, range.endCharacter);
     builder.replace(new vscode.Range(start, end), res);
   });
+  return chunk;
 };
 
 export default sortModule;

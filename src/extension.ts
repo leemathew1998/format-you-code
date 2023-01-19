@@ -3,6 +3,7 @@ import parserFile from "./parser/parserFile";
 import sortImport from "./parser/sortImport";
 import sortModule from "./parser/sortModule";
 import sortCss from "./parser/sortCss";
+import patchData from "./patch/patchData";
 
 // 执行格式化一个vue文件
 let formatOneFile = vscode.commands.registerCommand(
@@ -21,11 +22,13 @@ let formatOneFile = vscode.commands.registerCommand(
       await sortImport(scope.script.import);
     }
     if (scope.script.module.length > 2) {
-      await sortModule(scope.script.module.slice(1, -1));
+      const hasModules = await sortModule(scope.script.module.slice(1, -1));
+      patchData(scope.script.module, hasModules, scope.ast.render); //开始遍历全部module部分，对每一个小模块进行排序
     }
     if (scope.style.length) {
-      await sortCss(scope.style,scope.template);
+      await sortCss(scope.style, scope.template);
     }
+
     await vscode.commands.executeCommand("editor.action.formatDocument");
     vscode.window.showInformationMessage("format-one-file");
   }
