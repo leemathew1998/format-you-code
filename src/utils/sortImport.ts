@@ -4,7 +4,7 @@ const mergeSameImport = (imports: sortImportType) => {
   const keys = Object.keys(imports);
   keys.forEach((key) => {
     let type = imports[String(key)];
-    if (type instanceof Object) {
+    if (!Array.isArray(type)) {
       Object.keys(type).forEach((item) => {
         type[item] = reduceLines(type[item]) || [];
       });
