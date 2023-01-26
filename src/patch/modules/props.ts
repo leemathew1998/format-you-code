@@ -1,9 +1,14 @@
-export const processProps = (moduleLines, range, renderFunc, priorityList) => {
+export const processProps = (
+  moduleLines,
+  range,
+  renderFunc,
+  priorityList
+): string[] => {
   const needFixVariable = moduleLines.splice(
     range.trueStartIndex,
     range.trueEndIndex - range.trueStartIndex + 1
   );
-  let firstLineNumber = needFixVariable[0].lineNumber;
+  const returnParams: string[] = [];
   //props有两种，第一种是数组，第二种是对象
   const isArr = needFixVariable[0].text.indexOf("[") !== -1;
   if (isArr) {
@@ -16,7 +21,8 @@ export const processProps = (moduleLines, range, renderFunc, priorityList) => {
       .replace(/"/g, "")
       .replace(/'/g, "")
       .split(",");
-    if (strProps.length === 0) return;
+    if (strProps.length === 0) return returnParams;
+    returnParams.push(...strProps);
     //第一次循环，把需要放在renderFunc最前面的变量放在renderFunc最前面
     for (let index = 0; index < strProps.length; index++) {
       const item = strProps[index];
@@ -133,15 +139,5 @@ export const processProps = (moduleLines, range, renderFunc, priorityList) => {
     });
     moduleLines.splice(range.trueStartIndex, 0, ...needFixVariable);
   }
-
-  // needFixVariable.sort((a, b) => a?.thisVarIndex - b?.thisVarIndex);
-
-  // needFixVariable.forEach((item) => {
-  //   item.lineNumber = firstLineNumber;
-  //   firstLineNumber++;
-  //   delete item.textCopy;
-  //   delete item.thisVarIndex;
-  // });
-  // console.log(needFixVariable);
-  // moduleLines.splice(range.trueStartIndex, 0, ...needFixVariable);
+  return returnParams;
 };

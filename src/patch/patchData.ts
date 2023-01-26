@@ -50,6 +50,9 @@ const patchData = (moduleLines: any, hasModules: any, renderFunc: any) => {
   temp.second = Array.from(new Set(temp.second)).reverse();
   temp.third = Array.from(new Set(temp.third)).reverse();
   priorityList = temp;
+  let dataParams: string[] = [];
+  let propsParams: string[] = [];
+  let computedParams: string[] = [];
   for (let i = 0; i < hasModulesKeys.length; i++) {
     const key = hasModulesKeys[i];
     if (lifeCycleArr.includes(key)) continue;
@@ -71,7 +74,12 @@ const patchData = (moduleLines: any, hasModules: any, renderFunc: any) => {
       trueEndIndex: startIndex + hasModules[key].length - 1,
     };
     if (key === "data") {
-      modules.processData(moduleLines, range, renderFunc, priorityList);
+      dataParams = modules.processData(
+        moduleLines,
+        range,
+        renderFunc,
+        priorityList
+      );
     } else if (key === "methods") {
       modules.processMethods(moduleLines, range, renderFunc, priorityList);
     } else if (key === "components") {
@@ -81,9 +89,27 @@ const patchData = (moduleLines: any, hasModules: any, renderFunc: any) => {
     } else if (key === "mixins") {
       //mixins没办法处理，目前只做了排序
     } else if (key === "props") {
-      modules.processProps(moduleLines, range, renderFunc, priorityList);
+      propsParams = modules.processProps(
+        moduleLines,
+        range,
+        renderFunc,
+        priorityList
+      );
     } else if (key === "computed") {
-      modules.processComputed(moduleLines, range, renderFunc, priorityList);
+      computedParams = modules.processComputed(
+        moduleLines,
+        range,
+        renderFunc,
+        priorityList
+      );
+    } else if (key === "watch") {
+      modules.processWatch(
+        moduleLines,
+        range,
+        dataParams,
+        propsParams,
+        computedParams
+      );
     }
   }
 };

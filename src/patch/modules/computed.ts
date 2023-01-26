@@ -1,9 +1,10 @@
+import { returnParams } from "../../type";
 export const processComputed = (
   moduleLines,
   range,
   renderFunc,
   priorityList
-) => {
+): string[] => {
   const needFixVariable = moduleLines.splice(
     range.trueStartIndex,
     range.trueEndIndex - range.trueStartIndex + 1
@@ -11,6 +12,7 @@ export const processComputed = (
   let firstLineNumber = -1;
   let stackForComma: string[] = [];
   let currentIndex = 999999;
+  const returnParams: returnParams[] = [];
   //   debugger;
   //第一次循环，把需要放在renderFunc最前面的变量放在renderFunc最前面
   for (let index = 0; index < needFixVariable.length; index++) {
@@ -77,6 +79,10 @@ export const processComputed = (
       continue;
     }
     const thisVarIndex = renderFunc.indexOf(isshow[0]);
+    returnParams.push({
+      name: variableName,
+      thisVarIndex,
+    });
     item.thisVarIndex = thisVarIndex;
     currentIndex = thisVarIndex;
   }
@@ -89,4 +95,7 @@ export const processComputed = (
     delete item.thisVarIndex;
   });
   moduleLines.splice(range.trueStartIndex, 0, ...needFixVariable);
+  return returnParams
+    .sort((a, b) => a?.thisVarIndex - b?.thisVarIndex)
+    .map((item) => item.name);
 };

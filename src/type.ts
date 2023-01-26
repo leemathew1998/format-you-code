@@ -23,6 +23,11 @@ export interface sortImportType {
 }
 
 export interface sortCssType {
-  prop:string;
-  value:string;
+  prop: string;
+  value: string;
+}
+
+export interface returnParams {
+  name: string;
+  thisVarIndex: number;
 }
