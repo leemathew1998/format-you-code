@@ -1,5 +1,5 @@
 import { lifeCycleArr } from "../utils/constants";
-import { processData, processLifeCycle, processMethods } from "./patchFn";
+import { processComponents, processData, processLifeCycle, processMethods } from "./patchFn";
 
 const patchData = (moduleLines: any, hasModules: any, renderFunc: any) => {
   const hasModulesKeys = Object.keys(hasModules);
@@ -35,7 +35,7 @@ const patchData = (moduleLines: any, hasModules: any, renderFunc: any) => {
     second: [],
     third: [],
   };
-  Object.entries(priorityList).forEach(([key, value]) => {
+  Object.entries(priorityList).forEach(([key, value]:any) => {
     if (["beforeCreate", "created", "beforeMount", "mounted"].includes(key)) {
       temp.first.push(...value);
     }
@@ -74,6 +74,8 @@ const patchData = (moduleLines: any, hasModules: any, renderFunc: any) => {
       processData(moduleLines, range, renderFunc, priorityList);
     } else if (key === "methods") {
       processMethods(moduleLines, range, renderFunc, priorityList);
+    }else if (key === "components") {
+      processComponents(moduleLines, range, renderFunc);
     }
   }
 };
