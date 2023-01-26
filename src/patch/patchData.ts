@@ -1,11 +1,5 @@
 import { lifeCycleArr } from "../utils/constants";
-import {
-  processComponents,
-  processData,
-  processFilters,
-  processLifeCycle,
-  processMethods,
-} from "./patchFn";
+import * as modules from "./modules";
 
 const patchData = (moduleLines: any, hasModules: any, renderFunc: any) => {
   const hasModulesKeys = Object.keys(hasModules);
@@ -34,7 +28,7 @@ const patchData = (moduleLines: any, hasModules: any, renderFunc: any) => {
       trueStartIndex: startIndex,
       trueEndIndex: startIndex + hasModules[key].length - 1,
     };
-    processLifeCycle(moduleLines, range, key, priorityList);
+    modules.processLifeCycle(moduleLines, range, key, priorityList);
   });
   let temp: any = {
     first: [],
@@ -77,15 +71,17 @@ const patchData = (moduleLines: any, hasModules: any, renderFunc: any) => {
       trueEndIndex: startIndex + hasModules[key].length - 1,
     };
     if (key === "data") {
-      processData(moduleLines, range, renderFunc, priorityList);
+      modules.processData(moduleLines, range, renderFunc, priorityList);
     } else if (key === "methods") {
-      processMethods(moduleLines, range, renderFunc, priorityList);
+      modules.processMethods(moduleLines, range, renderFunc, priorityList);
     } else if (key === "components") {
-      processComponents(moduleLines, range, renderFunc);
+      modules.processComponents(moduleLines, range, renderFunc);
     } else if (key === "filters") {
-      processFilters(moduleLines, range, renderFunc);
+      modules.processFilters(moduleLines, range, renderFunc);
     } else if (key === "mixins") {
       //mixins没办法处理，目前只做了排序
+    } else if (key === "props") {
+      modules.processProps(moduleLines, range, renderFunc, priorityList);
     }
   }
 };
