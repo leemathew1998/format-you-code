@@ -82,6 +82,8 @@ const patchData = (moduleLines: any, hasModules: any, renderFunc: any) => {
       //mixins没办法处理，目前只做了排序
     } else if (key === "props") {
       modules.processProps(moduleLines, range, renderFunc, priorityList);
+    } else if (key === "computed") {
+      modules.processComputed(moduleLines, range, renderFunc, priorityList);
     }
   }
 };
