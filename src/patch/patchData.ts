@@ -1,5 +1,5 @@
 import { lifeCycleArr } from "../utils/constants";
-import { processComponents, processData, processLifeCycle, processMethods } from "./patchFn";
+import { processComponents, processData, processFilters, processLifeCycle, processMethods } from "./patchFn";
 
 const patchData = (moduleLines: any, hasModules: any, renderFunc: any) => {
   const hasModulesKeys = Object.keys(hasModules);
@@ -76,6 +76,8 @@ const patchData = (moduleLines: any, hasModules: any, renderFunc: any) => {
       processMethods(moduleLines, range, renderFunc, priorityList);
     }else if (key === "components") {
       processComponents(moduleLines, range, renderFunc);
+    }else if (key === "filters") {
+      processFilters(moduleLines, range, renderFunc);
     }
   }
 };
