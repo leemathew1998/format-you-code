@@ -278,8 +278,13 @@ const processFilters = (moduleLines, range, renderFunc) => {
     delete item.textCopy;
     delete item.thisVarIndex;
   });
-  console.log(needFixVariable)
   moduleLines.splice(range.trueStartIndex, 0, ...needFixVariable);
 };
 
-export { processData, processMethods, processLifeCycle, processComponents, processFilters };
+export {
+  processData,
+  processMethods,
+  processLifeCycle,
+  processComponents,
+  processFilters,
+};

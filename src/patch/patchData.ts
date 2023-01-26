@@ -1,5 +1,11 @@
 import { lifeCycleArr } from "../utils/constants";
-import { processComponents, processData, processFilters, processLifeCycle, processMethods } from "./patchFn";
+import {
+  processComponents,
+  processData,
+  processFilters,
+  processLifeCycle,
+  processMethods,
+} from "./patchFn";
 
 const patchData = (moduleLines: any, hasModules: any, renderFunc: any) => {
   const hasModulesKeys = Object.keys(hasModules);
@@ -35,7 +41,7 @@ const patchData = (moduleLines: any, hasModules: any, renderFunc: any) => {
     second: [],
     third: [],
   };
-  Object.entries(priorityList).forEach(([key, value]:any) => {
+  Object.entries(priorityList).forEach(([key, value]: any) => {
     if (["beforeCreate", "created", "beforeMount", "mounted"].includes(key)) {
       temp.first.push(...value);
     }
@@ -74,10 +80,12 @@ const patchData = (moduleLines: any, hasModules: any, renderFunc: any) => {
       processData(moduleLines, range, renderFunc, priorityList);
     } else if (key === "methods") {
       processMethods(moduleLines, range, renderFunc, priorityList);
-    }else if (key === "components") {
+    } else if (key === "components") {
       processComponents(moduleLines, range, renderFunc);
-    }else if (key === "filters") {
+    } else if (key === "filters") {
       processFilters(moduleLines, range, renderFunc);
+    } else if (key === "mixins") {
+      //mixins没办法处理，目前只做了排序
     }
   }
 };
