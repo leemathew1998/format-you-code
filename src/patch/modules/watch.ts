@@ -1,4 +1,3 @@
-import * as vscode from "vscode";
 export const processWatch = async (
   moduleLines,
   range,
@@ -10,13 +9,9 @@ export const processWatch = async (
     range.trueStartIndex,
     range.trueEndIndex - range.trueStartIndex + 1
   );
-  let watchMap = new Map();
   let firstLineNumber = -1;
-  let stackForComma: string[] = [];
-  //   debugger;
-  let currentIndex = String(Math.random() * 100).slice(0, 5);
+  let currentIndex = -1;
   let sortPriorityProps = [...dataParams, ...propsParams, ...computedParams];
-  console.log(sortPriorityProps);
   for (let index = 0; index < needFixVariable.length; index++) {
     const item = needFixVariable[index];
     if (!item.text.trim()) continue;
@@ -27,7 +22,6 @@ export const processWatch = async (
     item.textCopy = item.text.replace(/\s/g, "");
     if (item.textCopy.indexOf("watch:{") !== -1) {
       item.thisVarIndex = -1000;
-      stackForComma.push("{");
       continue;
     } else if (
       (item.textCopy.indexOf("}") !== -1 ||
@@ -35,61 +29,34 @@ export const processWatch = async (
       index === needFixVariable.length - 1
     ) {
       item.thisVarIndex = 1000000;
-      stackForComma.pop();
       continue;
     }
     item.thisVarIndex = currentIndex;
-
     // 开始匹配xxx:{或者xxx(这两种情况
     let variableNameType = item.textCopy.match(/(\w+)[:|\(]/g);
 
-    if (stackForComma.length > 1) {
-      continue;
-    } else if (stackForComma.length === 0) {
-      currentIndex = String(Math.random() * 100).slice(0, 5);
-    }
     if (!variableNameType) {
-      // if (
-      //   item.textCopy.indexOf("},") !== -1 ||
-      //   item.textCopy.indexOf("}") !== -1
-      // ) {
-      //   // currentIndex = 999999;
-      // }
       continue;
+    } else {
+      //说明匹配到了
+      variableNameType = variableNameType[0].slice(0, -1);
+      const temp = sortPriorityProps.indexOf(variableNameType);
+      if (temp === -1) {
+        //说明不是data,props,computed中的变量
+        item.thisVarIndex = currentIndex;
+      } else {
+        item.thisVarIndex = temp;
+        currentIndex = temp;
+      }
     }
-    console.log(variableNameType[0], stackForComma.length);
-    if (item.textCopy.indexOf("}") !== -1 && stackForComma.length) {
-      stackForComma.pop();
-    }
-    if (item.textCopy.indexOf("{") !== -1) {
-      stackForComma.push("{");
-    }
-    /***
- * 
- * 
- *     name: {
-      handler: function (val, oldVal) {
-        console.log("name changed", val, oldVal);
-      },
-      immediate: true,
-    },
-    number: {
-      handler: function (val, oldVal) {
-        console.log("number changed", val, oldVal);
-      },
-    },
- */
-
-    // variableName = variableName[1];
-    // const reg = new RegExp(`\\b${variableName}\\b`, "g");
-    // const isshow = renderFunc.match(reg);
-    // if (!isshow) {
-    //   currentIndex = 999999;
-    //   continue;
-    // }
-    // const thisVarIndex = renderFunc.indexOf(isshow[0]);
-    // item.thisVarIndex = thisVarIndex;
-    // currentIndex = thisVarIndex;
   }
-  //   console.log(needFixVariable);
+  needFixVariable.sort((a, b) => a?.thisVarIndex - b?.thisVarIndex);
+  
+  needFixVariable.forEach((item) => {
+    item.lineNumber = firstLineNumber;
+    firstLineNumber++;
+    delete item.textCopy;
+    delete item.thisVarIndex;
+  });
+  moduleLines.splice(range.trueStartIndex, 0, ...needFixVariable);
 };
