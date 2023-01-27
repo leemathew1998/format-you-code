@@ -56,9 +56,7 @@ export const processProps = (
   } else {
     //对象形式
     let firstLineNumber = -1;
-    let stackForComma: string[] = [];
     let currentIndex = 999999;
-    //   debugger;
     //第一次循环，把需要放在renderFunc最前面的变量放在renderFunc最前面
     for (let index = 0; index < needFixVariable.length; index++) {
       const item = needFixVariable[index];
@@ -74,7 +72,7 @@ export const processProps = (
         renderFunc += ` ${variableName} `;
       }
     }
-    // debugger;
+
     for (let index = 0; index < needFixVariable.length; index++) {
       const item = needFixVariable[index];
       item.thisVarIndex = currentIndex;
@@ -89,39 +87,25 @@ export const processProps = (
 
       if (item.textCopy.indexOf("props:{") !== -1) {
         item.thisVarIndex = -1000;
+        continue;
       } else if (
         (item.textCopy.indexOf("}") !== -1 ||
           item.textCopy.indexOf("},") !== -1) &&
         index === needFixVariable.length - 1
       ) {
         item.thisVarIndex = 1000000;
-      }
-      let variableName = item.textCopy.match(/(\w+):{?/);
-
-      if (item.textCopy.indexOf("}") !== -1 && stackForComma.length) {
-        stackForComma.pop();
-      }
-
-      if (!variableName || stackForComma.length >= 2) {
-        if (
-          item.textCopy.indexOf("},") !== -1 ||
-          item.textCopy.indexOf("}") !== -1
-        ) {
-          currentIndex = 999999;
-        }
         continue;
       }
-
-      //此处需要看这一行是不是这个函数的最后一行，检测{和}字符，存到stackForComma中
-      if (item.textCopy.indexOf("{") !== -1) {
-        stackForComma.push("{");
+      item.thisVarIndex = currentIndex;
+      let variableName = item.textCopy.match(/(\w+):{?/);
+      if (!variableName) {
+        continue;
       }
 
       variableName = variableName[1];
       const reg = new RegExp(`\\b${variableName}\\b`, "g");
       const isshow = renderFunc.match(reg);
       if (!isshow) {
-        currentIndex = 999999;
         continue;
       }
       const thisVarIndex = renderFunc.indexOf(isshow[0]);
@@ -130,7 +114,6 @@ export const processProps = (
     }
 
     needFixVariable.sort((a, b) => a?.thisVarIndex - b?.thisVarIndex);
-
     needFixVariable.forEach((item) => {
       item.lineNumber = firstLineNumber;
       firstLineNumber++;
