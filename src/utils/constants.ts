@@ -9,4 +9,7 @@ const lifeCycleArr = [
   "destroyed",
 ];
 
-export { lifeCycleArr };
+const IS_COMMENT = Symbol("isComment");
+const IS_EMPTY = Symbol("isEmpty");
+const IS_STRING = Symbol("isString");
+export { lifeCycleArr, IS_COMMENT, IS_EMPTY, IS_STRING };

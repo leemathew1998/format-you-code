@@ -31,3 +31,19 @@ export interface returnParams {
   name: string;
   thisVarIndex: number;
 }
+
+export interface needFixVariableType {
+  text: string;
+  lineNumber?: number;
+  thisVarIndex?: number;
+  textCopy?: string;
+}
+
+export interface rangeTye {
+  startLine: number;
+  startCharacter: number;
+  endLine: number;
+  endCharacter: number;
+  trueStartIndex?: number;
+  trueEndIndex?: number;
+}

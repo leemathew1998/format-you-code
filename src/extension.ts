@@ -21,12 +21,12 @@ let formatOneFile = vscode.commands.registerCommand(
     if (scope.script.import.length) {
       await sortImport(scope.script.import);
     }
-    if (scope.script.module.length > 2) {
-      const hasModules = await sortModule(scope.script.module.slice(1, -1));
-      patchData(scope.script.module, hasModules, scope.ast.render); //开始遍历全部module部分，对每一个小模块进行排序
-    }
     if (scope.style.length) {
       await sortCss(scope.style, scope.template);
+    }
+    if (scope.script.module.length > 2) {
+      const hasModules = await sortModule(scope.script.module.slice(1, -1));
+      await patchData(scope.script.module, hasModules, scope.ast.render); //开始遍历全部module部分，对每一个小模块进行排序
     }
 
     await vscode.commands.executeCommand("editor.action.formatDocument");

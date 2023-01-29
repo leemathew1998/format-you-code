@@ -64,6 +64,7 @@
   },
   "dependencies": {
     "cssnano": "^5.1.14",
+    "lodash": "^4.17.21",
     "vue-template-compiler": "^2.7.14"
   }
 }

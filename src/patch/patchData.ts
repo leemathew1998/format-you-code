@@ -1,8 +1,17 @@
+import { TextEditorEdit } from "vscode";
+const vscode = require("vscode");
 import { lifeCycleArr } from "../utils/constants";
 import * as modules from "./modules";
 
 const patchData = (moduleLines: any, hasModules: any, renderFunc: any) => {
   const hasModulesKeys = Object.keys(hasModules);
+  //首先确定好开始和结束
+  let start = new vscode.Position(moduleLines[0].lineNumber, 0);
+  let lastLine = moduleLines.length + moduleLines[0].lineNumber - 1;
+  let end = new vscode.Position(
+    lastLine,
+    moduleLines[moduleLines.length - 1].text.length
+  );
   let priorityList = {};
   //hasModulesKeys中需要先遍历完lifeCycleArr，然后再处理别的参数
   const lifeCycleFirst = hasModulesKeys.filter((key) => {
@@ -112,6 +121,12 @@ const patchData = (moduleLines: any, hasModules: any, renderFunc: any) => {
       );
     }
   }
+  //结束
+  const res = moduleLines.map((item) => item.text).join("\n");
+  return vscode.window.activeTextEditor.edit((builder: TextEditorEdit) => {
+    builder.delete(new vscode.Range(start, end));
+    builder.insert(start, res);
+  });
 };
 
 export default patchData;

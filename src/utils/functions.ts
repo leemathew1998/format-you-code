@@ -1,3 +1,5 @@
+import { IS_COMMENT, IS_EMPTY, IS_STRING } from "./constants";
+
 const flatCssNodesFunc = (cssAstNode, flatCssNodes) => {
   //第一次，给空数组
   if (!flatCssNodes.has(cssAstNode.selector)) {
@@ -52,4 +54,42 @@ const flatHtmlNodesFunc = (item, flatHtmlNodes) => {
   }
 };
 
-export { flatCssNodesFunc, flatHtmlNodesFunc };
+/**
+ * if we have remark like '//....' or '/** ....', we should skip this line
+ */
+const isCommentOrEmpty = (item) => {
+  if (item.text.trim().indexOf("//") === 0 || item.text.indexOf("*") !== -1) {
+    return IS_COMMENT;
+  } else if (!item.text.trim()) {
+    return IS_EMPTY;
+  }
+  return IS_STRING;
+};
+
+const patchLastComma = (item) => {
+  if (item.text.indexOf("*") !== -1) return;
+  const index = item.text.indexOf("//");
+  if (index > 0) {
+    //like this-> name:xxx //name is a variable
+    const temp = item.text.split("//");
+    const trimTemp = temp[0].trim();
+    if (trimTemp[trimTemp.length - 1] !== ",") {
+      temp[0] += ",";
+      temp[1] = "//" + temp[1];
+      item.text = temp.join("");
+    }
+  } else {
+    //like name:xxx
+    const trimTemp = item.text.trim();
+    if (trimTemp[trimTemp.length - 1] !== ",") {
+      item.text += ",";
+    }
+  }
+};
+
+export {
+  flatCssNodesFunc,
+  flatHtmlNodesFunc,
+  isCommentOrEmpty,
+  patchLastComma,
+};

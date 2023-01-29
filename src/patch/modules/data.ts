@@ -1,67 +1,76 @@
-import { returnParams } from "../../type";
+import { needFixVariableType, rangeTye, returnParams } from "../../type";
+import { IS_COMMENT, IS_EMPTY } from "../../utils/constants";
+import { isCommentOrEmpty, patchLastComma } from "../../utils/functions";
 export const processData = (
-  moduleLines,
-  range,
-  renderFunc,
+  moduleLines: needFixVariableType[],
+  range: rangeTye,
+  renderFunc: string,
   priorityList
 ): Array<string> => {
-  //截取响应的data部分
-  const needFixVariable = moduleLines.splice(
-    range.trueStartIndex,
-    range.trueEndIndex - range.trueStartIndex + 1
+  /**
+   * slice data part
+   * example:
+   * data(){
+   *   name:'111'
+   * }
+   */
+  let needFixVariable: needFixVariableType[] = moduleLines.splice(
+    range.trueStartIndex!,
+    range.trueEndIndex! - range.trueStartIndex! + 1
   );
-
+  //return a new sorted list
   const returnParams: returnParams[] = [];
-  let firstLineNumber = -1;
-  //第一次循环，把需要放在renderFunc最前面的变量放在renderFunc最前面
+  let firstLineNumber = needFixVariable[0].lineNumber;
+
+  //start sort the data module
+  let copyLines: needFixVariableType[] = [];
   for (let index = 0; index < needFixVariable.length; index++) {
     const item = needFixVariable[index];
-    if (!item.text.trim()) continue;
-    let variableName = item.text.match(/(\w+)\s*:/);
-    if (!variableName) continue;
-
-    variableName = variableName[1];
-
-    if (priorityList.first.includes(variableName)) {
-      //在renderFunc最前面插入
-      renderFunc = ` ${variableName} ` + renderFunc;
-    } else if (priorityList.third.includes(variableName)) {
-      renderFunc += ` ${variableName} `;
+    const CE = isCommentOrEmpty(item);
+    if (CE === IS_EMPTY) {
+      continue;
     }
-  }
-  for (let index = 0; index < needFixVariable.length; index++) {
-    const item = needFixVariable[index];
-    if (!item.text.trim()) continue;
-    // if (item.text.indexOf("//") !== -1 || item.text.indexOf("*") !== -1)
-    // continue;
-    let variableName = item.text.match(/(\w+)\s*:/);
+    copyLines.push({
+      text: item.text,
+    });
+    let variableName = item.text.match(/(\w+)\s*[:|,]/);
     if (!variableName) continue;
+    //If a parameter is prioritized/lagged,
+    //it needs to be added at the start or end of the render string(renderFunc)
+    if (priorityList.first.includes(variableName[1])) {
+      //prioritized
+      renderFunc = ` ${variableName[1]} ` + renderFunc;
+    } else if (priorityList.third.includes(variableName[1])) {
+      //anti-priority
+      renderFunc += ` ${variableName[1]} `;
+    }
 
-    variableName = variableName[1];
-
-    const reg = new RegExp(`\\b${variableName}\\b`, "g");
+    //incase this line has not "," but move to the top, will have a error
+    patchLastComma(item);
+    const reg = new RegExp(`\\b${variableName[1]}\\b`, "g");
     const isshow = renderFunc.match(reg);
     if (!isshow) continue;
-    if (firstLineNumber === -1) {
-      firstLineNumber = needFixVariable[index].lineNumber;
-    }
-    // debugger;
     const thisVarIndex = renderFunc.indexOf(isshow[0]);
     returnParams.push({
-      name: variableName,
+      name: variableName[1],
       thisVarIndex,
     });
-    needFixVariable[index].thisVarIndex = thisVarIndex;
+    copyLines[copyLines.length - 1].thisVarIndex = thisVarIndex;
   }
-  needFixVariable.sort((a, b) => a?.thisVarIndex - b?.thisVarIndex);
-  needFixVariable.forEach((item) => {
+  copyLines.sort((a, b) => {
+    if (a.thisVarIndex && b.thisVarIndex) {
+      return a.thisVarIndex - b.thisVarIndex;
+    }
+    return 0;
+  });
+  copyLines.forEach((item) => {
+    item.lineNumber = firstLineNumber;
+    firstLineNumber!++;
     if (item.thisVarIndex) {
-      item.lineNumber = firstLineNumber;
-      firstLineNumber++;
       delete item.thisVarIndex;
     }
   });
-  moduleLines.splice(range.trueStartIndex, 0, ...needFixVariable);
+  moduleLines.splice(range.trueStartIndex!, 0, ...copyLines);
   return returnParams
     .sort((a, b) => a?.thisVarIndex - b?.thisVarIndex)
     .map((item) => item.name);
