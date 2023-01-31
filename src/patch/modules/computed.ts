@@ -1,100 +1,131 @@
-import { returnParams } from "../../type";
+import { needFixVariableType, rangeTye, returnParams } from "../../type";
+import { IS_EMPTY } from "../../utils/constants";
+import { isCommentOrEmpty, patchLastComma } from "../../utils/functions";
 export const processComputed = (
-  moduleLines,
-  range,
-  renderFunc,
+  moduleLines: needFixVariableType[],
+  range: rangeTye,
+  renderFunc: string,
   priorityList
 ): string[] => {
+  /**
+   * slice data part
+   * example:
+   * computed(){
+   *   xxx(){},
+   * }
+   */
   const needFixVariable = moduleLines.splice(
-    range.trueStartIndex,
-    range.trueEndIndex - range.trueStartIndex + 1
+    range.trueStartIndex!,
+    range.trueEndIndex! - range.trueStartIndex! + 1
   );
-  let firstLineNumber = -1;
-  let stackForComma: string[] = [];
-  let currentIndex = 999999;
+  let firstLineNumber = needFixVariable[0].lineNumber;
+  let currentIndex = 999999; //init value
+  let deep = 0;
   const returnParams: returnParams[] = [];
-  //   debugger;
-  //第一次循环，把需要放在renderFunc最前面的变量放在renderFunc最前面
+  let copyLines: needFixVariableType[] = [];
   for (let index = 0; index < needFixVariable.length; index++) {
     const item = needFixVariable[index];
-    if (!item.text.trim()) continue;
-    let variableName = item.text.replace(/\s/g, "").match(/(\w+)\((\w+)?\)\{/);
-    if (!variableName) continue;
-    variableName = variableName[1];
-    if (priorityList.first.includes(variableName)) {
-      //在renderFunc最前面插入
-      renderFunc = ` ${variableName} ` + renderFunc;
-    } else if (priorityList.third.includes(variableName)) {
-      renderFunc += ` ${variableName} `;
+    const CE = isCommentOrEmpty(item);
+    if (CE === IS_EMPTY) {
+      continue;
     }
-  }
-  for (let index = 0; index < needFixVariable.length; index++) {
-    const item = needFixVariable[index];
-    item.thisVarIndex = currentIndex;
-    if (firstLineNumber === -1) {
-      firstLineNumber = item.lineNumber;
-    }
-    if (!item.text.trim()) continue;
-    // if (item.text.indexOf("//") !== -1 || item.text.indexOf("*") !== -1)
-    // continue;
-    //把空格删掉
+    /**
+     * first,give a init value, In this case,
+     * it means that this line is also part of the function
+     * example:
+     * computed1(){  -->thisVarIndex = xxx
+     * return 'this line also have the same index'; -->thisVarIndex = xxx
+     * }  -->thisVarIndex = xxx
+     */
+    copyLines.push({
+      text: item.text,
+      thisVarIndex: currentIndex,
+    });
     item.textCopy = item.text.replace(/\s/g, "");
-
+    //check the start line or end line, make the thisVarIndex to the mini or large
     if (item.textCopy.indexOf("computed:{") !== -1) {
-      item.thisVarIndex = -1000;
+      copyLines[copyLines.length - 1].thisVarIndex = -1000;
+      continue;
     } else if (
-      (item.textCopy.indexOf("}") !== -1 ||
-        item.textCopy.indexOf("},") !== -1) &&
+      item.textCopy.indexOf("}") !== -1 &&
       index === needFixVariable.length - 1
     ) {
-      item.thisVarIndex = 1000000;
+      copyLines[copyLines.length - 1].thisVarIndex = 1000000;
+      continue;
     }
+    const bracketStartIndex = item.textCopy.indexOf("{");
+    const bracketEndIndex = item.textCopy.indexOf("}");
+    const commentIndex = item.textCopy.indexOf("//");
+    /**
+     * type1:   [{ //]  bS:0  c:2
+     * type2:   [{   ]  bS:0  c:-1
+     * type3:   [// {]  bS:2  c:0
+     * type4:   [//  ]  bS:-1 c:0
+     */
+    if (
+      bracketStartIndex !== -1 &&
+      (bracketStartIndex < commentIndex || commentIndex === -1)
+    ) {
+      // type1 or type2
+      deep++;
+    }
+    /**
+     * type5:   [} //]  bE:0  c:2
+     * type6:   [}   ]  bE:0  c:-1
+     * type7:   [// }]  bE:2  c:0
+     * type8:   [//  ]  bE:-1 c:0
+     */
+    if (
+      bracketEndIndex !== -1 &&
+      (bracketEndIndex < commentIndex || commentIndex === -1)
+    ) {
+      //type5 or type6
+      deep--;
+      patchLastComma(item);
+      copyLines[copyLines.length - 1].text = item.text;
+
+      if (deep === 0) {
+        currentIndex = 999999;
+      }
+    }
+    //match two type: xxx(){、xxx(args){
     let variableName = item.textCopy.match(/(\w+)\((\w+)?\)\{/);
 
-    if (item.textCopy.indexOf("}") !== -1 && stackForComma.length) {
-      stackForComma.pop();
+    if (!variableName) continue;
+    //If a parameter is prioritized/lagged,
+    //it needs to be added at the start or end of the render string(renderFunc)
+    if (priorityList.first.includes(variableName[1])) {
+      //prioritized
+      renderFunc = ` ${variableName[1]} ` + renderFunc;
+    } else if (priorityList.third.includes(variableName[1])) {
+      //anti-priority
+      renderFunc += ` ${variableName[1]} `;
     }
-    //检测xxx(){或者xxx(...){两种情况，一种有参数，一种没有参数
 
-    if (!variableName) {
-      if (
-        item.textCopy.indexOf("},") !== -1 ||
-        item.textCopy.indexOf("}") !== -1
-      ) {
+    const reg = new RegExp(`\\b${variableName[1]}\\b`, "g");
+    const isshow = renderFunc.match(reg);
+    if (!isshow) {
+      if (deep === 0) {
         currentIndex = 999999;
       }
       continue;
     }
-
-    //此处需要看这一行是不是这个函数的最后一行，检测{和}字符，存到stackForComma中
-    if (item.textCopy.indexOf("{") !== -1) {
-      stackForComma.push("{");
-    }
-
-    variableName = variableName[1];
-    const reg = new RegExp(`\\b${variableName}\\b`, "g");
-    const isshow = renderFunc.match(reg);
-    if (!isshow) {
-      currentIndex = 999999;
-      continue;
-    }
     const thisVarIndex = renderFunc.indexOf(isshow[0]);
+
     returnParams.push({
-      name: variableName,
+      name: variableName[1],
       thisVarIndex,
     });
-    item.thisVarIndex = thisVarIndex;
+    copyLines[copyLines.length - 1].thisVarIndex = thisVarIndex;
     currentIndex = thisVarIndex;
   }
-
-  needFixVariable.sort((a, b) => a?.thisVarIndex - b?.thisVarIndex);
-  needFixVariable.forEach((item) => {
+  copyLines.sort((a, b) => a.thisVarIndex! - b.thisVarIndex!);
+  copyLines.forEach((item) => {
     item.lineNumber = firstLineNumber;
-    firstLineNumber++;
-    delete item.textCopy;
+    firstLineNumber!++;
     delete item.thisVarIndex;
   });
-  moduleLines.splice(range.trueStartIndex, 0, ...needFixVariable);
+  moduleLines.splice(range.trueStartIndex!, 0, ...copyLines);
   return returnParams
     .sort((a, b) => a?.thisVarIndex - b?.thisVarIndex)
     .map((item) => item.name);
