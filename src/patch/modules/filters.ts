@@ -1,73 +1,92 @@
-export const processFilters = (moduleLines, range, renderFunc) => {
-    const needFixVariable = moduleLines.splice(
-      range.trueStartIndex,
-      range.trueEndIndex - range.trueStartIndex + 1
-    );
-    let firstLineNumber = -1;
-    let stackForComma: string[] = [];
-    let currentIndex = 999999;
-    for (let index = 0; index < needFixVariable.length; index++) {
-      const item = needFixVariable[index];
-      item.thisVarIndex = currentIndex;
-      if (firstLineNumber === -1) {
-        firstLineNumber = item.lineNumber;
-      }
-      if (!item.text.trim()) continue;
-      // if (item.text.indexOf("//") !== -1 || item.text.indexOf("*") !== -1)
-      // continue;
-      //把空格删掉
-      item.textCopy = item.text.replace(/\s/g, "");
-  
-      if (item.textCopy.indexOf("filters:{") !== -1) {
-        item.thisVarIndex = -1000;
-      } else if (
-        (item.textCopy.indexOf("}") !== -1 ||
-          item.textCopy.indexOf("},") !== -1) &&
-        index === needFixVariable.length - 1
-      ) {
-        item.thisVarIndex = 1000000;
-      }
-      let variableName = item.textCopy.match(/(\w+)\((\w+)?\)\{/);
-  
-      if (item.textCopy.indexOf("}") !== -1 && stackForComma.length) {
-        stackForComma.pop();
-      }
-      //检测xxx(){或者xxx(...){两种情况，一种有参数，一种没有参数
-  
-      if (!variableName) {
-        if (
-          item.textCopy.indexOf("},") !== -1 ||
-          item.textCopy.indexOf("}") !== -1
-        ) {
-          currentIndex = 999999;
-        }
-        continue;
-      }
-  
-      //此处需要看这一行是不是这个函数的最后一行，检测{和}字符，存到stackForComma中
-      if (item.textCopy.indexOf("{") !== -1) {
-        stackForComma.push("{");
-      }
-  
-      variableName = variableName[1];
-      const reg = new RegExp(`\\b${variableName}\\b`, "g");
-      const isshow = renderFunc.match(reg);
-      if (!isshow) {
-        currentIndex = 999999;
-        continue;
-      }
-      const thisVarIndex = renderFunc.indexOf(isshow[0]);
-      item.thisVarIndex = thisVarIndex;
-      currentIndex = thisVarIndex;
+import { needFixVariableType, rangeTye } from "../../type";
+import { IS_EMPTY } from "../../utils/constants";
+import { isCommentOrEmpty, patchLastComma } from "../../utils/functions";
+
+export const processFilters = (
+  moduleLines: needFixVariableType[],
+  range: rangeTye,
+  renderFunc: string
+) => {
+  /**
+   * slice data part
+   * example:
+   * filters:{
+   *   xxx(){},
+   * }
+   */
+  const needFixVariable = moduleLines.splice(
+    range.trueStartIndex!,
+    range.trueEndIndex! - range.trueStartIndex! + 1
+  );
+  let firstLineNumber = needFixVariable[0].lineNumber;
+  let currentIndex = 999999; //init value
+  let deep = 0;
+  let copyLines: needFixVariableType[] = [];
+  for (let index = 0; index < needFixVariable.length; index++) {
+    const item = needFixVariable[index];
+    const CE = isCommentOrEmpty(item);
+    if (CE === IS_EMPTY) {
+      continue;
     }
-  
-    needFixVariable.sort((a, b) => a?.thisVarIndex - b?.thisVarIndex);
-  
-    needFixVariable.forEach((item) => {
-      item.lineNumber = firstLineNumber;
-      firstLineNumber++;
-      delete item.textCopy;
-      delete item.thisVarIndex;
+    copyLines.push({
+      text: item.text,
+      thisVarIndex: currentIndex,
     });
-    moduleLines.splice(range.trueStartIndex, 0, ...needFixVariable);
-  };
+    item.textCopy = item.text.replace(/\s/g, "");
+    if (item.textCopy.indexOf("filters:{") !== -1) {
+      copyLines[copyLines.length - 1].thisVarIndex = -1000;
+      continue;
+    } else if (
+      item.textCopy.indexOf("}") !== -1 &&
+      index === needFixVariable.length - 1
+    ) {
+      copyLines[copyLines.length - 1].thisVarIndex = 1000000;
+      continue;
+    }
+    const bracketStartIndex = item.textCopy.indexOf("{");
+    const bracketEndIndex = item.textCopy.indexOf("}");
+    const commentIndex = item.textCopy.indexOf("//");
+    if (
+      bracketStartIndex !== -1 &&
+      (bracketStartIndex < commentIndex || commentIndex === -1)
+    ) {
+      deep++;
+    }
+    if (
+      bracketEndIndex !== -1 &&
+      (bracketEndIndex < commentIndex || commentIndex === -1)
+    ) {
+      deep--;
+      patchLastComma(item);
+      copyLines[copyLines.length - 1].text = item.text;
+
+      if (deep === 0) {
+        currentIndex = 999999;
+      }
+    }
+    //match two type: xxx(){、xxx(args){
+    let variableName = item.textCopy.match(/(\w+)\((\w+)?\)\{/);
+    if (!variableName) continue;
+    const reg = new RegExp(`\\b${variableName[1]}\\b`, "g");
+    const isshow = renderFunc.match(reg);
+    if (!isshow) {
+      if (deep === 0) {
+        currentIndex = 999999;
+      }
+      continue;
+    }
+
+    const thisVarIndex = renderFunc.indexOf(isshow[0]);
+    copyLines[copyLines.length - 1].thisVarIndex = thisVarIndex;
+    currentIndex = thisVarIndex;
+  }
+
+  copyLines.sort((a, b) => a.thisVarIndex! - b.thisVarIndex!);
+  copyLines.forEach((item) => {
+    item.lineNumber = firstLineNumber;
+    firstLineNumber!++;
+    delete item.thisVarIndex;
+  });
+
+  moduleLines.splice(range.trueStartIndex!, 0, ...copyLines);
+};

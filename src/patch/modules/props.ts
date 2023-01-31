@@ -1,18 +1,30 @@
+import { needFixVariableType, rangeTye } from "../../type";
+
 export const processProps = (
-  moduleLines,
-  range,
-  renderFunc,
+  moduleLines: needFixVariableType[],
+  range: rangeTye,
+  renderFunc: string,
   priorityList
 ): string[] => {
+  /**
+   * slice data part
+   * example:
+   * props:[xxx,xxx]
+   * or
+   * props:{
+   *    props1:{},
+   *    props2:{}
+   * }
+   */
   const needFixVariable = moduleLines.splice(
-    range.trueStartIndex,
-    range.trueEndIndex - range.trueStartIndex + 1
+    range.trueStartIndex!,
+    range.trueEndIndex! - range.trueStartIndex! + 1
   );
   const returnParams: string[] = [];
-  //props有两种，第一种是数组，第二种是对象
+  //props have two type: 1.[] 2.{}
   const isArr = needFixVariable[0].text.indexOf("[") !== -1;
   if (isArr) {
-    //数组形式
+    //['props1','props2']
     let strProps = needFixVariable
       .map((item) => item.text.replace(/\s/g, ""))
       .join("")
@@ -21,7 +33,12 @@ export const processProps = (
       .replace(/"/g, "")
       .replace(/'/g, "")
       .split(",");
-    if (strProps.length === 0) return returnParams;
+    for (let index = 0; index < needFixVariable.length; index++) {
+      //match "props1" or 'props1'
+      const item = needFixVariable[index]
+      const matchs = item.text.match(/\["'\](/w+)/g)
+    }
+
     returnParams.push(...strProps);
     //第一次循环，把需要放在renderFunc最前面的变量放在renderFunc最前面
     for (let index = 0; index < strProps.length; index++) {
