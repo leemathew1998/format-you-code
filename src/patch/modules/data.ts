@@ -1,5 +1,5 @@
 import { needFixVariableType, rangeTye, returnParams } from "../../type";
-import { IS_COMMENT, IS_EMPTY } from "../../utils/constants";
+import { IS_COMMENT, IS_EMPTY, IS_STRING } from "../../utils/constants";
 import { isCommentOrEmpty, patchLastComma } from "../../utils/functions";
 export const processData = (
   moduleLines: needFixVariableType[],
@@ -51,10 +51,12 @@ export const processData = (
     const isshow = renderFunc.match(reg);
     if (!isshow) continue;
     const thisVarIndex = renderFunc.indexOf(isshow[0]);
-    returnParams.push({
-      name: variableName[1],
-      thisVarIndex,
-    });
+    if (CE === IS_STRING) {
+      returnParams.push({
+        name: variableName[1],
+        thisVarIndex,
+      });
+    }
     copyLines[copyLines.length - 1].thisVarIndex = thisVarIndex;
   }
   copyLines.sort((a, b) => {

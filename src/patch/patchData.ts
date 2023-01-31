@@ -1,4 +1,3 @@
-import { TextEditorEdit } from "vscode";
 const vscode = require("vscode");
 import { lifeCycleArr } from "../utils/constants";
 import * as modules from "./modules";

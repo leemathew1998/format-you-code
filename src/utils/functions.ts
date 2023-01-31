@@ -105,10 +105,49 @@ const patchLastComma = (item) => {
     }
   }
 };
-
+const patchLastCommaForSquareBracket = (item) => {
+  if (item.text.indexOf("*") !== -1) return;
+  const commentIndex = item.text.indexOf("//");
+  if (commentIndex > 0) {
+    //like this-> xxx//
+    //if have brackets, there have two type
+    // 1.//}  2.}//
+    const temp = item.text.split("//");
+    const trim0Temp = temp[0].trim();
+    const trim1Temp = temp[1].trim();
+    const bracketIndex = item.text.indexOf("]");
+    if (bracketIndex > 0) {
+      if (commentIndex > bracketIndex) {
+        if (trim0Temp[trim0Temp.length - 1] !== ",") {
+          temp[0] += ",";
+          temp[1] = "//" + temp[1];
+          item.text = temp.join("");
+        }
+      } else {
+        if (trim1Temp[trim1Temp.length - 1] !== ",") {
+          temp[1] = "//" + temp[1] + ",";
+          item.text = temp.join("");
+        }
+      }
+    } else {
+      if (trim0Temp[trim0Temp.length - 1] !== ",") {
+        temp[0] += ",";
+        temp[1] = "//" + temp[1];
+        item.text = temp.join("");
+      }
+    }
+  } else {
+    //like name:xxx
+    const trimTemp = item.text.trim();
+    if (trimTemp[trimTemp.length - 1] !== ",") {
+      item.text += ",";
+    }
+  }
+};
 export {
   flatCssNodesFunc,
   flatHtmlNodesFunc,
   isCommentOrEmpty,
   patchLastComma,
+  patchLastCommaForSquareBracket
 };

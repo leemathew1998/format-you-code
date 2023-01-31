@@ -36,7 +36,7 @@ export const processProps = (
     for (let index = 0; index < needFixVariable.length; index++) {
       //match "props1" or 'props1'
       const item = needFixVariable[index]
-      const matchs = item.text.match(/\["'\](/w+)/g)
+      // const matchs = item.text.match(/\["'\](/w+)/g)
     }
 
     returnParams.push(...strProps);
