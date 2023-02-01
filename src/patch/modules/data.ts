@@ -35,6 +35,12 @@ export const processData = (
     });
     let variableName = item.text.match(/(\w+)\s*[:|,]/);
     if (!variableName) continue;
+    if (CE === IS_STRING) {
+      returnParams.push({
+        name: variableName[1],
+        thisVarIndex: 999999,
+      });
+    }
     //If a parameter is prioritized/lagged,
     //it needs to be added at the start or end of the render string(renderFunc)
     if (priorityList.first.includes(variableName[1])) {
@@ -51,11 +57,9 @@ export const processData = (
     const isshow = renderFunc.match(reg);
     if (!isshow) continue;
     const thisVarIndex = renderFunc.indexOf(isshow[0]);
-    if (CE === IS_STRING) {
-      returnParams.push({
-        name: variableName[1],
-        thisVarIndex,
-      });
+    const alpha = returnParams.find((name) => name.name === variableName![1])
+    if(alpha){
+      alpha.thisVarIndex = thisVarIndex
     }
     copyLines[copyLines.length - 1].thisVarIndex = thisVarIndex;
   }

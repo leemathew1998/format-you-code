@@ -1,4 +1,6 @@
-import { needFixVariableType, rangeTye } from "../../type";
+import { needFixVariableType, rangeTye, returnParams } from "../../type";
+import { IS_EMPTY } from "../../utils/constants";
+import { isCommentOrEmpty, patchLastComma } from "../../utils/functions";
 
 export const processProps = (
   moduleLines: needFixVariableType[],
@@ -20,124 +22,173 @@ export const processProps = (
     range.trueStartIndex!,
     range.trueEndIndex! - range.trueStartIndex! + 1
   );
-  const returnParams: string[] = [];
+  const returnParams: returnParams[] = [];
   //props have two type: 1.[] 2.{}
   const isArr = needFixVariable[0].text.indexOf("[") !== -1;
   if (isArr) {
-    //['props1','props2']
-    let strProps = needFixVariable
-      .map((item) => item.text.replace(/\s/g, ""))
-      .join("")
-      .split("[")[1]
-      .split("]")[0]
-      .replace(/"/g, "")
-      .replace(/'/g, "")
-      .split(",");
+    /**
+     * type1:['props1','props2']
+     * type2:['props1', //xxxx
+     *        'props2'  //xxxx
+     *       ]
+     */
+    let props: string[] = [];
     for (let index = 0; index < needFixVariable.length; index++) {
       //match "props1" or 'props1'
-      const item = needFixVariable[index]
-      // const matchs = item.text.match(/\["'\](/w+)/g)
-    }
-
-    returnParams.push(...strProps);
-    //第一次循环，把需要放在renderFunc最前面的变量放在renderFunc最前面
-    for (let index = 0; index < strProps.length; index++) {
-      const item = strProps[index];
-      if (priorityList.first.includes(item)) {
-        //在renderFunc最前面插入
-        renderFunc = ` ${item} ` + renderFunc;
-      } else if (priorityList.third.includes(item)) {
-        renderFunc += ` ${item} `;
+      const item = needFixVariable[index];
+      const singleQuotes = item.text.match(/\'([^\"]*)\'/g);
+      const doubleQuotes = item.text.match(/\"([^\"]*)\"/g);
+      if (singleQuotes) {
+        singleQuotes[0]
+          .split(",")
+          .forEach((item) => props.push(item.split("'")[1]));
+      }
+      if (doubleQuotes) {
+        doubleQuotes[0]
+          .split(",")
+          .forEach((item) => props.push(item.split(`"`)[1]));
       }
     }
-    let map = new Map();
-    for (let index = 0; index < strProps.length; index++) {
-      const item = strProps[index];
 
+    let map = new Map();
+    for (let index = 0; index < props.length; index++) {
+      const item = props[index];
+      //If a parameter is prioritized/lagged,
+      //it needs to be added at the start or end of the render string(renderFunc)
+      if (priorityList.first.includes(item)) {
+        //prioritized
+        renderFunc = ` ${item} ` + renderFunc;
+      } else if (priorityList.third.includes(item)) {
+        //anti-priority
+        renderFunc += ` ${item} `;
+      }
+      returnParams.push({
+        name: item,
+        thisVarIndex: 999999,
+      });
       const reg = new RegExp(`\\b${item}\\b`, "g");
       const isshow = renderFunc.match(reg);
       if (!isshow) continue;
       const thisVarIndex = renderFunc.indexOf(isshow[0]);
+      const alpha = returnParams.find((name) => name.name === item)
+      if(alpha){
+        alpha.thisVarIndex = thisVarIndex
+      }
       map.set(thisVarIndex, item);
     }
-    //按照key的大小重新排序变成一个value的Array
+
     let arr = Array.from(map)
       .sort((a, b) => a[0] - b[0])
       .map((item) => item[1]);
-    needFixVariable[0].text = needFixVariable[0].text = `props: [${arr
+    needFixVariable[0].text = `props: [${arr
       .map((item) => `"${item}"`)
       .join(", ")}],`;
+    //if is muti-line, change into single line
     if (needFixVariable.length > 1) {
       needFixVariable.splice(1);
     }
   } else {
-    //对象形式
-    let firstLineNumber = -1;
-    let currentIndex = 999999;
-    //第一次循环，把需要放在renderFunc最前面的变量放在renderFunc最前面
-    for (let index = 0; index < needFixVariable.length; index++) {
-      const item = needFixVariable[index];
-      if (!item.text.trim()) continue;
-      //匹配xxx:{、xxx: {、xxx : {三种情况
-      let variableName = item.text.replace(/\s/g, "").match(/(\w+):{?/);
-      if (!variableName) continue;
-      variableName = variableName[1];
-      if (priorityList.first.includes(variableName)) {
-        //在renderFunc最前面插入
-        renderFunc = ` ${variableName} ` + renderFunc;
-      } else if (priorityList.third.includes(variableName)) {
-        renderFunc += ` ${variableName} `;
-      }
-    }
+    /**
+     *     props:{
+     *          props1:{
+     *            type:String,
+     *            ......
+     *          },
+     *     }
+     */
+    let firstLineNumber = needFixVariable[0].lineNumber;
+    let currentIndex = 999999; //init value
+    let deep = 0;
+    let copyLines: needFixVariableType[] = [];
 
     for (let index = 0; index < needFixVariable.length; index++) {
       const item = needFixVariable[index];
-      item.thisVarIndex = currentIndex;
-      if (firstLineNumber === -1) {
-        firstLineNumber = item.lineNumber;
+      const CE = isCommentOrEmpty(item);
+      if (CE === IS_EMPTY) {
+        continue;
       }
-      if (!item.text.trim()) continue;
-      // if (item.text.indexOf("//") !== -1 || item.text.indexOf("*") !== -1)
-      // continue;
-      //把空格删掉
+      copyLines.push({
+        text: item.text,
+        thisVarIndex: currentIndex,
+      });
+
       item.textCopy = item.text.replace(/\s/g, "");
-
+      //check the start line or end line, make the thisVarIndex to the mini or large
       if (item.textCopy.indexOf("props:{") !== -1) {
-        item.thisVarIndex = -1000;
+        copyLines[copyLines.length - 1].thisVarIndex = -1000;
         continue;
       } else if (
-        (item.textCopy.indexOf("}") !== -1 ||
-          item.textCopy.indexOf("},") !== -1) &&
+        item.textCopy.indexOf("}") !== -1 &&
         index === needFixVariable.length - 1
       ) {
-        item.thisVarIndex = 1000000;
+        copyLines[copyLines.length - 1].thisVarIndex = 1000000;
         continue;
       }
-      item.thisVarIndex = currentIndex;
+      const bracketStartIndex = item.textCopy.indexOf("{");
+      const bracketEndIndex = item.textCopy.indexOf("}");
+      const commentIndex = item.textCopy.indexOf("//");
       let variableName = item.textCopy.match(/(\w+):{?/);
-      if (!variableName) {
-        continue;
+      if (deep === 0 && variableName) {
+        returnParams.push({
+          name: variableName[1],
+          thisVarIndex: currentIndex,
+        });
+      }
+      if (
+        bracketStartIndex !== -1 &&
+        (bracketStartIndex < commentIndex || commentIndex === -1)
+      ) {
+        deep++;
+      }
+      if (
+        bracketEndIndex !== -1 &&
+        (bracketEndIndex < commentIndex || commentIndex === -1)
+      ) {
+        deep--;
+        patchLastComma(item);
+        copyLines[copyLines.length - 1].text = item.text;
+
+        if (deep === 0) {
+          currentIndex = 999999;
+        }
       }
 
-      variableName = variableName[1];
-      const reg = new RegExp(`\\b${variableName}\\b`, "g");
+      if (!variableName) continue;
+      //If a parameter is prioritized/lagged,
+      //it needs to be added at the start or end of the render string(renderFunc)
+      if (priorityList.first.includes(variableName[1])) {
+        //prioritized
+        renderFunc = ` ${variableName[1]} ` + renderFunc;
+      } else if (priorityList.third.includes(variableName[1])) {
+        //anti-priority
+        renderFunc += ` ${variableName[1]} `;
+      }
+
+      const reg = new RegExp(`\\b${variableName[1]}\\b`, "g");
       const isshow = renderFunc.match(reg);
       if (!isshow) {
+        if (deep === 0) {
+          currentIndex = 999999;
+        }
         continue;
       }
       const thisVarIndex = renderFunc.indexOf(isshow[0]);
-      item.thisVarIndex = thisVarIndex;
+      const alpha = returnParams.find((name) => name.name === variableName![1])
+      if(alpha){
+        alpha.thisVarIndex = thisVarIndex
+      }
+      copyLines[copyLines.length - 1].thisVarIndex = thisVarIndex;
       currentIndex = thisVarIndex;
     }
-
-    needFixVariable.sort((a, b) => a?.thisVarIndex - b?.thisVarIndex);
-    needFixVariable.forEach((item) => {
+    copyLines.sort((a, b) => a.thisVarIndex! - b.thisVarIndex!);
+    copyLines.forEach((item) => {
       item.lineNumber = firstLineNumber;
-      firstLineNumber++;
-      delete item.textCopy;
+      firstLineNumber!++;
       delete item.thisVarIndex;
     });
-    moduleLines.splice(range.trueStartIndex, 0, ...needFixVariable);
+    moduleLines.splice(range.trueStartIndex!, 0, ...copyLines);
   }
-  return returnParams;
+  return returnParams
+    .sort((a, b) => a?.thisVarIndex - b?.thisVarIndex)
+    .map((item) => item.name);
 };

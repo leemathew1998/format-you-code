@@ -91,7 +91,11 @@ export const processComputed = (
     //match two type: xxx(){、xxx(args){
     let variableName = item.textCopy.match(/(\w+)\((\w+)?\)\{/);
 
-    if (!variableName) continue;
+    if (!variableName || deep > 1) continue;
+    returnParams.push({
+      name: variableName[1],
+      thisVarIndex: currentIndex,
+    });
     //If a parameter is prioritized/lagged,
     //it needs to be added at the start or end of the render string(renderFunc)
     if (priorityList.first.includes(variableName[1])) {
@@ -112,10 +116,10 @@ export const processComputed = (
     }
     const thisVarIndex = renderFunc.indexOf(isshow[0]);
 
-    returnParams.push({
-      name: variableName[1],
-      thisVarIndex,
-    });
+    const alpha = returnParams.find((name) => name.name === variableName![1]);
+    if (alpha) {
+      alpha.thisVarIndex = thisVarIndex;
+    }
     copyLines[copyLines.length - 1].thisVarIndex = thisVarIndex;
     currentIndex = thisVarIndex;
   }

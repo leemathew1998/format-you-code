@@ -34,7 +34,6 @@ export const processComponents = (
 
     if (
       item.textCopy.indexOf("components:{") === -1 &&
-      item.textCopy.indexOf("},") === -1 &&
       item.textCopy.indexOf("}") === -1
     ) {
       //if not the start or end, must be the components
