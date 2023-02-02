@@ -71,7 +71,9 @@ export const processMethods = (
     //match two type: xxx(){、xxx(args){
     let variableName = item.textCopy.match(/(\w+)\((\w+)?\)\{/);
 
-    if (!variableName) continue;
+    if (!variableName || deep > 1) {
+      continue
+    };
     //If a parameter is prioritized/lagged,
     //it needs to be added at the start or end of the render string(renderFunc)
     if (priorityList.first.includes(variableName[1])) {
@@ -94,7 +96,6 @@ export const processMethods = (
     copyLines[copyLines.length - 1].thisVarIndex = thisVarIndex;
     currentIndex = thisVarIndex;
   }
-
   copyLines.sort((a, b) => a.thisVarIndex! - b.thisVarIndex!);
   copyLines.forEach((item) => {
     item.lineNumber = firstLineNumber;

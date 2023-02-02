@@ -37,6 +37,7 @@ export interface needFixVariableType {
   lineNumber?: number;
   thisVarIndex?: number;
   textCopy?: string;
+  CE?: any;
 }
 
 export interface rangeTye {

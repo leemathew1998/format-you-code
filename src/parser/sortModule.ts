@@ -1,4 +1,6 @@
 import { TextEditorEdit } from "vscode";
+import { IS_EMPTY } from "../utils/constants";
+import { isCommentOrEmpty } from "../utils/functions";
 
 const vscode = require("vscode");
 const sortModule = async (lines) => {
@@ -36,6 +38,13 @@ const sortModule = async (lines) => {
 
   const chunk = lines.reduce(
     (out, { text, lineNumber }, index) => {
+      const CE = isCommentOrEmpty({
+        text,
+        lineNumber,
+      });
+      // if (CE === IS_EMPTY) {
+      //   return
+      // }
       if (index === 0) {
         range.startLine = lineNumber;
         out.space = text.match(/^(\s+|)/)[0].length;
@@ -108,11 +117,11 @@ const sortModule = async (lines) => {
       return out;
     }, [])
     .join("\n");
+  let start = new vscode.Position(range.startLine, range.startCharacter);
+  let end = new vscode.Position(range.endLine, range.endCharacter);
   await vscode.window.activeTextEditor.edit((builder: TextEditorEdit) => {
-    //先进行删除，然后在进行添加
-    let start = new vscode.Position(range.startLine, range.startCharacter);
-    let end = new vscode.Position(range.endLine, range.endCharacter);
-    builder.replace(new vscode.Range(start, end), res);
+    builder.delete(new vscode.Range(start, end));
+    builder.insert(start, res);
   });
   return chunk;
 };

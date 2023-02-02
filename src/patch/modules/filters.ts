@@ -66,7 +66,9 @@ export const processFilters = (
     }
     //match two type: xxx(){、xxx(args){
     let variableName = item.textCopy.match(/(\w+)\((\w+)?\)\{/);
-    if (!variableName) continue;
+    if (!variableName || deep > 1) {
+      continue
+    };
     const reg = new RegExp(`\\b${variableName[1]}\\b`, "g");
     const isshow = renderFunc.match(reg);
     if (!isshow) {

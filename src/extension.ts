@@ -30,7 +30,7 @@ let formatOneFile = vscode.commands.registerCommand(
     }
 
     await vscode.commands.executeCommand("editor.action.formatDocument");
-    vscode.window.showInformationMessage("format-one-file");
+    // vscode.window.showInformationMessage("format-one-file");
   }
 );
 

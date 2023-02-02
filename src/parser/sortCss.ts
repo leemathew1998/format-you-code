@@ -8,6 +8,7 @@ const sortCss = async (cssModules, ast) => {
   //style标签不止一个，需要循环处理
   for (let i = 0; i < cssModules.length; i++) {
     if (cssModules[i].length > 0) {
+
       const range = {
         startLine: cssModules[i][0].lineNumber,
         startCharacter: 0,
