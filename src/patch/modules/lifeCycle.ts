@@ -25,4 +25,5 @@ export const processLifeCycle = (
       ...variableName.map((item) => item.replace("this.", ""))
     );
   }
+  moduleLines.splice(range.trueStartIndex!, 0, ...needFixVariable);
 };

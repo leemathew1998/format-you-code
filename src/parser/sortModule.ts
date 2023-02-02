@@ -87,7 +87,7 @@ const sortModule = async (lines) => {
         ...chunk.mixins.slice(1, -1).sort(),
         chunk.mixins[chunk.mixins.length - 1],
       ];
-    } else if (chunk.mixins.length == 1) {
+    } else if (chunk.mixins.length === 1) {
       const match = chunk.mixins[0].match(/^(.*\[)(.*)(\].*,)$/);
       if (match) {
         const sort = match[2]

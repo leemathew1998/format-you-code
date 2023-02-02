@@ -61,10 +61,10 @@ export const processMethods = (
       (bracketEndIndex < commentIndex || commentIndex === -1)
     ) {
       deep--;
-      patchLastComma(item);
-      copyLines[copyLines.length - 1].text = item.text;
 
       if (deep === 0) {
+        patchLastComma(item);
+        copyLines[copyLines.length - 1].text = item.text;
         currentIndex = 999999;
       }
     }

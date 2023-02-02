@@ -81,10 +81,10 @@ export const processComputed = (
     ) {
       //type5 or type6
       deep--;
-      patchLastComma(item);
-      copyLines[copyLines.length - 1].text = item.text;
 
       if (deep === 0) {
+        patchLastComma(item);
+        copyLines[copyLines.length - 1].text = item.text;
         currentIndex = 999999;
       }
     }

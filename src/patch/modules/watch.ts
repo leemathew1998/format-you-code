@@ -67,10 +67,9 @@ export const processWatch = async (
       (bracketEndIndex < commentIndex || commentIndex === -1)
     ) {
       deep--;
-      patchLastComma(item);
-      copyLines[copyLines.length - 1].text = item.text;
-
       if (deep === 0) {
+        patchLastComma(item);
+        copyLines[copyLines.length - 1].text = item.text;
         currentIndex = 999999;
       }
     }
@@ -86,10 +85,9 @@ export const processWatch = async (
       (squareBracketEnd < commentIndex || commentIndex === -1)
     ) {
       deep--;
-      patchLastCommaForSquareBracket(item);
-      copyLines[copyLines.length - 1].text = item.text;
-
       if (deep === 0) {
+        patchLastCommaForSquareBracket(item);
+        copyLines[copyLines.length - 1].text = item.text;
         currentIndex = 999999;
       }
     }
