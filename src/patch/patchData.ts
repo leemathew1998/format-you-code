@@ -123,11 +123,11 @@ const patchData = (moduleLines: any, hasModules: any, renderFunc: any) => {
   }
   //结束
   const res = moduleLines.map((item) => item.text).join("\n");
-  // console.log(res)
-  return vscode.window.activeTextEditor.edit((builder: TextEditorEdit) => {
-    builder.delete(new vscode.Range(start, end));
-    builder.insert(start, res);
-  });
+  console.log(res)
+  // return vscode.window.activeTextEditor.edit((builder: TextEditorEdit) => {
+  //   builder.delete(new vscode.Range(start, end));
+  //   builder.insert(start, res);
+  // });
 };
 
 export default patchData;

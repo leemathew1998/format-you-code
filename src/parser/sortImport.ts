@@ -1,14 +1,8 @@
-const vscode = require("vscode");
-import { TextEditorEdit } from "vscode";
-import { sortImportType } from "../type";
+import { needFixVariableType, sortImportType } from "../type";
 import { mergeSameImport } from "../utils/sortImport";
-const sortImport = (lines: any) => {
-  const range = {
-    startLine: -1,
-    startCharacter: 0,
-    endLine: -1,
-    endCharacter: 0,
-  };
+const sortImport = (imports: any) => {
+  const lines = imports.import
+  let firstLineNumber = lines[0].lineNumber;
   const chunkObj: sortImportType = {
     global: {
       lib: [],
@@ -28,14 +22,6 @@ const sortImport = (lines: any) => {
     other: [],
   };
   const chunk = lines.reduce((out: any, { text, lineNumber }) => {
-    if (range.startLine === -1) {
-      range.startLine = lineNumber;
-    }
-    if (range.endLine < lineNumber) {
-      range.endLine = lineNumber;
-      range.endCharacter = text.length;
-    }
-
     if (text.match(/^import/)) {
       let type = text.match(/@/)
         ? "share"
@@ -54,26 +40,31 @@ const sortImport = (lines: any) => {
 
     return out;
   }, chunkObj);
+
   mergeSameImport(chunk);
-  return vscode.window.activeTextEditor.edit((builder: TextEditorEdit) => {
-    let start = new vscode.Position(range.startLine, range.startCharacter);
-    let end = new vscode.Position(range.endLine, range.endCharacter);
-    builder.replace(
-      new vscode.Range(start, end),
-      [
-        ...chunk.global.lib.sort(),
-        ...chunk.global.mixin.sort(),
-        ...chunk.global.component.sort(),
-        ...chunk.share.lib.sort(),
-        ...chunk.share.mixin.sort(),
-        ...chunk.share.component.sort(),
-        ...chunk.local.lib.sort(),
-        ...chunk.local.mixin.sort(),
-        ...chunk.local.component.sort(),
-        ...chunk.other,
-      ].join("\n")
-    );
+  let linesCopy: needFixVariableType[] = [];
+  Object.entries(chunk).forEach((item) => {
+    if (!Array.isArray(item[1])) {
+      Object.entries(item[1]!).forEach((arr) => {
+        arr[1].forEach((text) => {
+          linesCopy.push({
+            text,
+            lineNumber: firstLineNumber,
+          });
+          firstLineNumber++;
+        });
+      });
+    } else {
+      item[1].forEach((text) => {
+        linesCopy.push({
+          text,
+          lineNumber: firstLineNumber,
+        });
+        firstLineNumber++;
+      });
+    }
   });
+  imports.import = linesCopy
 };
 
 export default sortImport;

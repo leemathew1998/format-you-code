@@ -19,13 +19,13 @@ let formatOneFile = vscode.commands.registerCommand(
     }
     const scope = parserFile(res!.document);
     if (scope.script.import.length) {
-      await sortImport(scope.script.import);
+      sortImport(scope.script);
     }
-    if (scope.style.length) {
-      await sortCss(scope.style, scope.template);
-    }
+    // if (scope.style.length) {
+    //   await sortCss(scope.style, scope.template);
+    // }
     if (scope.script.module.length > 2) {
-      const hasModules = await sortModule(scope.script.module.slice(1, -1));
+      const hasModules = sortModule(scope.script);
       await patchData(scope.script.module, hasModules, scope.ast.render); //开始遍历全部module部分，对每一个小模块进行排序
     }
 

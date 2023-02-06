@@ -1,15 +1,14 @@
-import { TextEditorEdit } from "vscode";
+import { needFixVariableType } from "../type";
 import { IS_EMPTY } from "../utils/constants";
-import { isCommentOrEmpty } from "../utils/functions";
-
-const vscode = require("vscode");
-const sortModule = async (lines) => {
-  const range = {
-    startLine: -1,
-    startCharacter: 0,
-    endLine: -1,
-    endCharacter: 0,
-  };
+import { isCommentOrEmpty, patchLastComma } from "../utils/functions";
+const sortModule = (script) => {
+  let lines = script.module
+  let firstLineNumber = lines[0].lineNumber;
+  let copyLines: needFixVariableType[] = [];
+  const returnParams: any = {};
+  let currentIndex = 999999; //init value
+  let currentName = "";
+  let deep = 0;
   const scopes = [
     "el",
     "name",
@@ -34,96 +33,138 @@ const sortModule = async (lines) => {
     "beforeDestroy",
     "methods",
     "fetchOnServer",
+    "render"
   ];
 
-  const chunk = lines.reduce(
-    (out, { text, lineNumber }, index) => {
-      const CE = isCommentOrEmpty({
-        text,
-        lineNumber,
+  for (let index = 0; index < lines.length; index++) {
+    const item = lines[index];
+    const CE = isCommentOrEmpty(item);
+    if (CE === IS_EMPTY) {
+      continue;
+    }
+    copyLines.push({
+      text: item.text,
+      thisVarIndex: currentIndex,
+    });
+    if (deep > 0) {
+      returnParams[currentName].push({
+        text: copyLines[copyLines.length - 1],
       });
-      // if (CE === IS_EMPTY) {
-      //   return
-      // }
-      if (index === 0) {
-        range.startLine = lineNumber;
-        out.space = text.match(/^(\s+|)/)[0].length;
-      }
-      if (range.endLine < lineNumber) {
-        range.endLine = lineNumber;
-        range.endCharacter = text.length;
-      }
-      let match = text.match(
-        new RegExp(
-          "^(\\s{" + out.space + "})(async\\s+|)(\\w+)((\\s+|)(:|\\())"
-        )
-      );
-      if (match) {
-        out.scope = match[3];
-      }
-      if (out.scope) {
-        if (scopes.indexOf(out.scope) === -1) {
-          scopes.push(out.scope);
-        }
-        if (!out.keep.hasOwnProperty(out.scope)) {
-          out.keep[out.scope] = [];
-        }
-        out.keep[out.scope].push(text);
-      }
+    }
+    item.textCopy = item.text.replace(/\s/g, "");
+    //check the start line or end line, make the thisVarIndex to the mini or large
+    if (item.textCopy.indexOf("exportdefault{") !== -1) {
+      copyLines[copyLines.length - 1].thisVarIndex = -1000;
+      continue;
+    } else if (
+      item.textCopy.indexOf("}") !== -1 &&
+      index === lines.length - 1
+    ) {
+      copyLines[copyLines.length - 1].thisVarIndex = 1000000;
+      continue;
+    }
+    const bracketStartIndex = item.textCopy.indexOf("{");
+    const bracketEndIndex = item.textCopy.indexOf("}");
+    const squareBracketStart = item.textCopy.indexOf("[");
+    const squareBracketEnd = item.textCopy.indexOf("]");
+    const commentIndex = item.textCopy.indexOf("//");
+    if (
+      bracketStartIndex !== -1 &&
+      (bracketStartIndex < commentIndex || commentIndex === -1)
+    ) {
+      deep++;
+    }
+    if (
+      bracketEndIndex !== -1 &&
+      (bracketEndIndex < commentIndex || commentIndex === -1)
+    ) {
+      deep--;
 
-      return out;
-    },
-    {
-      space: 0,
-      scope: null,
-      keep: {},
+      if (deep === 0) {
+        patchLastComma(item);
+        copyLines[copyLines.length - 1].text = item.text;
+        currentIndex = 999999;
+      }
     }
-  ).keep;
-  if (chunk.hasOwnProperty("components")) {
-    if (chunk.components.length > 2) {
-      chunk.components = [
-        chunk.components[0],
-        ...chunk.components.slice(1, -1).sort(),
-        chunk.components[chunk.components.length - 1],
-      ];
+    // for square bracket
+    if (
+      squareBracketStart !== -1 &&
+      (squareBracketStart < commentIndex || commentIndex === -1)
+    ) {
+      deep++;
     }
+    if (
+      squareBracketEnd !== -1 &&
+      (squareBracketEnd < commentIndex || commentIndex === -1)
+    ) {
+      deep--;
+      if (deep === 0) {
+        currentIndex = 0;
+      }
+    }
+    // debugger
+    let reg1 = item.textCopy.match(/(\w+)\((\w+)?\)\{/); //xxxx():{
+    let reg2 = item.textCopy.match(/(\w+)\s*:/); //xxx:
+    let reg3 = item.textCopy.match(/(\w+):{?(\w+)/); //xxx:{
+    let regVal = reg1 ?? reg2 ?? reg3;
+    if (!regVal || deep > 1) {
+      continue;
+    }
+
+    const indexFromScopes = scopes.indexOf(regVal[1]);
+    if (indexFromScopes !== -1) {
+      copyLines[copyLines.length - 1].thisVarIndex = indexFromScopes;
+      currentIndex = indexFromScopes;
+    }
+    if (!returnParams.hasOwnProperty(regVal[1])) {
+      currentName = regVal[1];
+      returnParams[regVal[1]] = [];
+    }
+    returnParams[currentName].push({
+      text: copyLines[copyLines.length - 1],
+      length: copyLines.length - 1,
+    });
   }
-
-  if (chunk.hasOwnProperty("mixins")) {
-    if (chunk.mixins.length > 2) {
-      chunk.mixins = [
-        chunk.mixins[0],
-        ...chunk.mixins.slice(1, -1).sort(),
-        chunk.mixins[chunk.mixins.length - 1],
+  debugger
+  if (returnParams.hasOwnProperty("mixins")) {
+    if (returnParams.mixins.length > 2) {
+      let start = returnParams.mixins[0].length;
+      let mixinsLines = [
+        returnParams.mixins[0].text,
+        ...returnParams.mixins
+          .slice(1, -1)
+          .sort((a, b) => (a > b ? 1 : -1))
+          .map((i) => i.text),
+        returnParams.mixins[returnParams.mixins.length - 1].text,
       ];
-    } else if (chunk.mixins.length === 1) {
-      const match = chunk.mixins[0].match(/^(.*\[)(.*)(\].*,)$/);
+      
+      copyLines.splice(start, returnParams.mixins.length, ...mixinsLines);
+    } else if (returnParams.mixins.length === 1) {
+      const match =
+        copyLines[returnParams.mixins[0].length].text.match(
+          /^(.*\[)(.*)(\].*,)$/
+        );
       if (match) {
         const sort = match[2]
           .split(",")
           .map((e) => e.trim())
+          .filter((i) => i.length)
           .sort()
           .join(", ");
-        chunk.mixins = [match[1] + sort + match[3]];
+        copyLines[returnParams.mixins[0].length].text =
+          match[1] + sort + match[3];
       }
     }
   }
-
-  const res = scopes
-    .reduce((out: string[], scope) => {
-      if (chunk.hasOwnProperty(scope)) {
-        out.push(...chunk[scope]);
-      }
-      return out;
-    }, [])
-    .join("\n");
-  let start = new vscode.Position(range.startLine, range.startCharacter);
-  let end = new vscode.Position(range.endLine, range.endCharacter);
-  await vscode.window.activeTextEditor.edit((builder: TextEditorEdit) => {
-    builder.delete(new vscode.Range(start, end));
-    builder.insert(start, res);
+  //start sort
+  copyLines.sort((a, b) => a.thisVarIndex! - b.thisVarIndex!);
+  copyLines.forEach((item) => {
+    item.lineNumber = firstLineNumber;
+    firstLineNumber!++;
+    delete item.thisVarIndex;
   });
-  return chunk;
+  script.module = copyLines;
+  return returnParams;
 };
 
 export default sortModule;
