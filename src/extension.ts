@@ -18,14 +18,27 @@ let formatOneFile = vscode.commands.registerCommand(
       vscode.window.showErrorMessage("当前文件不是vue文件");
     }
     const scope = parserFile(res!.document);
+
+    let scopeCopy = JSON.parse(JSON.stringify(scope))
+    console.log(scopeCopy)
     if (scope.script.import.length) {
-      sortImport(scope.script);
+      const temp = scope.script.import
+      scope.script.importRange = [
+        new vscode.Position(temp[0].lineNumber, 0),
+        new vscode.Position(temp[temp.length-1].lineNumber, temp[temp.length-1].text.length)
+      ]
+      await sortImport(scope.script);
     }
     // if (scope.style.length) {
     //   await sortCss(scope.style, scope.template);
     // }
     if (scope.script.module.length > 2) {
-      const hasModules = sortModule(scope.script);
+      const temp = scope.script.module
+      scope.script.moduleRange = [
+        new vscode.Position(temp[0].lineNumber, 0),
+        new vscode.Position(temp[temp.length-1].lineNumber, temp[temp.length-1].text.length)
+      ]
+      const hasModules = await sortModule(scope.script);
       await patchData(scope.script.module, hasModules, scope.ast.render); //开始遍历全部module部分，对每一个小模块进行排序
     }
 

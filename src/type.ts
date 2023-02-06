@@ -1,6 +1,8 @@
 interface scriptTypeBase {
   import: Array<{ text: string; lineNumber: number }>;
   module: Array<{ text: string; lineNumber: number }>;
+  importRange?:any;
+  moduleRange?:any
 }
 interface sortImportTypeBase {
   lib: Array<string>;

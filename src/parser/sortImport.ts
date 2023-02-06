@@ -1,7 +1,9 @@
+const vscode = require("vscode");
+import { TextEditorEdit } from "vscode";
 import { needFixVariableType, sortImportType } from "../type";
 import { mergeSameImport } from "../utils/sortImport";
 const sortImport = (imports: any) => {
-  const lines = imports.import
+  const lines = imports.import;
   let firstLineNumber = lines[0].lineNumber;
   const chunkObj: sortImportType = {
     global: {
@@ -64,7 +66,18 @@ const sortImport = (imports: any) => {
       });
     }
   });
-  imports.import = linesCopy
+  imports.import = linesCopy;
+  const res =
+    linesCopy
+      .filter((i) => i.text.length)
+      .map((item) => item.text)
+      .join("\n") + "\n";
+  return vscode.window.activeTextEditor.edit((builder: TextEditorEdit) => {
+    builder.delete(
+      new vscode.Range(imports.importRange[0], imports.importRange[1])
+    );
+    builder.insert(imports.importRange[0], res);
+  });
 };
 
 export default sortImport;

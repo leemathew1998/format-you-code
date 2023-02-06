@@ -1,8 +1,10 @@
+const vscode = require("vscode");
+import { TextEditorEdit } from "vscode";
 import { needFixVariableType } from "../type";
 import { IS_EMPTY } from "../utils/constants";
 import { isCommentOrEmpty, patchLastComma } from "../utils/functions";
-const sortModule = (script) => {
-  let lines = script.module
+const sortModule = async (script) => {
+  let lines = script.module;
   let firstLineNumber = lines[0].lineNumber;
   let copyLines: needFixVariableType[] = [];
   const returnParams: any = {};
@@ -33,7 +35,7 @@ const sortModule = (script) => {
     "beforeDestroy",
     "methods",
     "fetchOnServer",
-    "render"
+    "render",
   ];
 
   for (let index = 0; index < lines.length; index++) {
@@ -106,11 +108,10 @@ const sortModule = (script) => {
     let reg1 = item.textCopy.match(/(\w+)\((\w+)?\)\{/); //xxxx():{
     let reg2 = item.textCopy.match(/(\w+)\s*:/); //xxx:
     let reg3 = item.textCopy.match(/(\w+):{?(\w+)/); //xxx:{
-    let regVal = reg1 ?? reg2 ?? reg3;
+    let regVal = reg2 ?? reg1 ?? reg3;
     if (!regVal || deep > 1) {
       continue;
     }
-
     const indexFromScopes = scopes.indexOf(regVal[1]);
     if (indexFromScopes !== -1) {
       copyLines[copyLines.length - 1].thisVarIndex = indexFromScopes;
@@ -125,7 +126,6 @@ const sortModule = (script) => {
       length: copyLines.length - 1,
     });
   }
-  debugger
   if (returnParams.hasOwnProperty("mixins")) {
     if (returnParams.mixins.length > 2) {
       let start = returnParams.mixins[0].length;
@@ -137,7 +137,7 @@ const sortModule = (script) => {
           .map((i) => i.text),
         returnParams.mixins[returnParams.mixins.length - 1].text,
       ];
-      
+
       copyLines.splice(start, returnParams.mixins.length, ...mixinsLines);
     } else if (returnParams.mixins.length === 1) {
       const match =
@@ -164,6 +164,19 @@ const sortModule = (script) => {
     delete item.thisVarIndex;
   });
   script.module = copyLines;
+
+  const res =
+    copyLines
+      .filter((i) => i.text.length)
+      .map((item) => item.text)
+      .join("\n");
+  await vscode.window.activeTextEditor.edit((builder: TextEditorEdit) => {
+    builder.delete(
+      new vscode.Range(script.moduleRange[0], script.moduleRange[1])
+    );
+    builder.insert(script.moduleRange[0], res);
+  });
+
   return returnParams;
 };
 
