@@ -37,8 +37,8 @@ export const processData = (
   }
 
   for (let index = 0; index < notEmptyData.length; index++) {
-    // debugger;
     const item = notEmptyData[index];
+    // debugger;
     copyLines.push({
       text: item.text,
       thisVarIndex: currentIndex,
@@ -109,12 +109,15 @@ export const processData = (
     if (!variableName || !flagAlpha) {
       continue;
     }
-    if (!oneShort && deep > 1) {
+    // if (!oneShort && deep > 1) {
+    //   continue;
+    // }
+    if (deep >= 2) {
       continue;
     }
-    if (oneShort) {
-      oneShort = false;
-    }
+    // if (oneShort) {
+    //   oneShort = false;
+    // }
     if (item.CE === IS_STRING && deep <= 2) {
       // debugger;
       returnParams.push({
@@ -124,7 +127,9 @@ export const processData = (
     }
     if (deep === 1) {
       // incase this line has not "," but move to the top, will have a error
-      copyLines[copyLines.length - 1].text = patchLastCommaForData(copyLines[copyLines.length - 1].text)
+      copyLines[copyLines.length - 1].text = patchLastCommaForData(
+        copyLines[copyLines.length - 1].text
+      );
     }
     //If a parameter is prioritized/lagged,
     //it needs to be added at the start or end of the render string(renderFunc)
@@ -152,8 +157,7 @@ export const processData = (
     currentIndex = thisVarIndex;
     copyLines[copyLines.length - 1].thisVarIndex = thisVarIndex;
   }
-
-  // console.log(copyLines)
+  debugger;
   copyLines.sort((a, b) => {
     if (a.thisVarIndex && b.thisVarIndex) {
       return a.thisVarIndex - b.thisVarIndex;
@@ -172,3 +176,61 @@ export const processData = (
     .sort((a, b) => a?.thisVarIndex - b?.thisVarIndex)
     .map((item) => item.name);
 };
+
+
+<template>
+  <div class="components-container">
+    <el-table :data="gridData">
+      <el-table-column property="date" label="Date" width="150" />
+      <el-table-column property="name" label="Name" width="200" />
+      <el-table-column property="address" label="Address" />
+    </el-table>
+    <el-button type="primary" @click="dialogTableVisible = true">
+      open a Drag Dialog
+    </el-button>
+    <el-dialog
+      v-el-drag-dialog
+      :visible.sync="dialogTableVisible"
+      title="Shipping address"
+      @dragDialog="handleDrag"
+    >
+      <el-select ref="select" v-model="value" placeholder="请选择">
+        <el-option
+          v-for="item in options"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
+        />
+      </el-select>
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+import elDragDialog from '@/directive/el-drag-dialog'; // base on element-ui
+
+export default {
+  name: 'DragDialogDemo',
+  directives: { elDragDialog },
+  data() {
+    return {
+      dialogTableVisible: false,
+      options: [{ value: '选项1', label: '黄金糕' }],
+      value: '',
+      gridData: [
+        {
+          date: '2016-05-02',
+          name: 'John Smith',
+          address: 'No.1518,  Jinshajiang Road, Putuo District',
+        },
+      ],
+    };
+  },
+  methods: {
+    handleDrag() {
+      this.$refs.select.blur();
+    },
+    // v-el-drag-dialog onDrag callback function
+  },
+};
+</script>
