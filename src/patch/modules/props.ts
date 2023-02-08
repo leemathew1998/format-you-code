@@ -68,11 +68,13 @@ export const processProps = (
       });
       const reg = new RegExp(`\\b${item}\\b`, "g");
       const isshow = renderFunc.match(reg);
-      if (!isshow) continue;
+      if (!isshow) {
+        continue;
+      }
       const thisVarIndex = renderFunc.indexOf(isshow[0]);
-      const alpha = returnParams.find((name) => name.name === item)
-      if(alpha){
-        alpha.thisVarIndex = thisVarIndex
+      const alpha = returnParams.find((name) => name.name === item);
+      if (alpha) {
+        alpha.thisVarIndex = thisVarIndex;
       }
       map.set(thisVarIndex, item);
     }
@@ -154,8 +156,8 @@ export const processProps = (
       }
 
       if (!variableName || deep > 1) {
-        continue
-      };
+        continue;
+      }
       //If a parameter is prioritized/lagged,
       //it needs to be added at the start or end of the render string(renderFunc)
       if (priorityList.first.includes(variableName[1])) {
@@ -175,9 +177,9 @@ export const processProps = (
         continue;
       }
       const thisVarIndex = renderFunc.indexOf(isshow[0]);
-      const alpha = returnParams.find((name) => name.name === variableName![1])
-      if(alpha){
-        alpha.thisVarIndex = thisVarIndex
+      const alpha = returnParams.find((name) => name.name === variableName![1]);
+      if (alpha) {
+        alpha.thisVarIndex = thisVarIndex;
       }
       copyLines[copyLines.length - 1].thisVarIndex = thisVarIndex;
       currentIndex = thisVarIndex;

@@ -80,7 +80,7 @@ export const processComponents = (
     }
     if (!isshowCase1 && !isshowCase2) {
       //two case both not match
-      copyLines[i].thisVarIndex = 99999
+      copyLines[i].thisVarIndex = 99999;
       continue;
     } else if (isshowCase1 && isshowCase2) {
       //if both case match, we use the smaller index
@@ -96,13 +96,12 @@ export const processComponents = (
       copyLines[i].thisVarIndex = renderFunc.indexOf(isshowCase2[0]);
     }
   }
-
   //this have two type one line mode and muti line mode
   const space = needFixVariable[0].text.split("components")[0];
   if (needFixVariable.length === 1) {
     let line = {
       //need padding the space in front of components
-      text: `${space}components: {${copyLines.map((i) => i.text + ", ")}},`,
+      text: `${space}components: { ${copyLines.map((i) => i.text + ", ")}},`,
       lineNumber: firstLineNumber,
     };
     copyLines = [line];
@@ -119,8 +118,8 @@ export const processComponents = (
       const haveComment = item.text.split("//")[1];
       const pureText = item.text.split(",")[0];
       item.text = `${pureText.trimEnd()},`;
-      if(haveComment.length){
-        item.text += ` //${haveComment}`
+      if (haveComment?.length) {
+        item.text += ` //${haveComment}`;
       }
     });
     //add head and tail

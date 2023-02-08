@@ -15,7 +15,9 @@ const mergeSameImport = (imports: sortImportType) => {
 };
 
 const reduceLines = (lines: Array<string>) => {
-  if (lines.length === 0) return;
+  if (lines.length === 0) {
+    return;
+  }
   /***
    * import { mapGetters } from "vuex";
    * import { mapState } from "vuex";

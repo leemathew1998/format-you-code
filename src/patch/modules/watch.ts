@@ -91,11 +91,15 @@ export const processWatch = async (
         currentIndex = 999999;
       }
     }
-    if (deep > 1) continue;
+    if (deep > 1) {
+      continue;
+    }
     // 开始匹配xxx:{或者xxx(这两种情况
     let matchs = item.textCopy.match(/([A-Za-z0-9_'"]+)[:|\(|\[]/g);
 
-    if (!matchs) continue;
+    if (!matchs) {
+      continue;
+    }
     for (let i = 0; i < sortPriorityProps.length; i++) {
       const name = sortPriorityProps[i];
       if (matchs![0].includes(name)) {

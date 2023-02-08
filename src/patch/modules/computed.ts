@@ -91,7 +91,9 @@ export const processComputed = (
     //match two type: xxx(){、xxx(args){
     let variableName = item.textCopy.match(/(\w+)\((\w+)?\)\{/);
 
-    if (!variableName || deep > 1) continue;
+    if (!variableName || deep > 1) {
+      continue;
+    }
     returnParams.push({
       name: variableName[1],
       thisVarIndex: currentIndex,

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 interface scriptTypeBase {
   import: Array<{ text: string; lineNumber: number }>;
   module: Array<{ text: string; lineNumber: number }>;

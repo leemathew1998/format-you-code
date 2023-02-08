@@ -16,11 +16,14 @@ export const processLifeCycle = (
   for (let index = 0; index < needFixVariable.length; index++) {
     const item = needFixVariable[index];
     const CE = isCommentOrEmpty(item);
-    if (CE !== IS_STRING) {//if this line is empty or comment,skip this line
+    if (CE !== IS_STRING) {
+      //if this line is empty or comment,skip this line
       continue;
     }
     let variableName = item.text.match(/this\.(\w+)/g);
-    if (!variableName) continue;
+    if (!variableName) {
+      continue;
+    }
     priorityList[name].push(
       ...variableName.map((item) => item.replace("this.", ""))
     );

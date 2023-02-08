@@ -20,22 +20,28 @@ let formatOneFile = vscode.commands.registerCommand(
     const scope = parserFile(res!.document);
 
     if (scope.script.import.length) {
-      const temp = scope.script.import
+      const temp = scope.script.import;
       scope.script.importRange = [
         new vscode.Position(temp[0].lineNumber, 0),
-        new vscode.Position(temp[temp.length-1].lineNumber, temp[temp.length-1].text.length)
-      ]
+        new vscode.Position(
+          temp[temp.length - 1].lineNumber,
+          temp[temp.length - 1].text.length
+        ),
+      ];
       await sortImport(scope.script);
     }
     // if (scope.style.length) {
     //   await sortCss(scope.style, scope.template);
     // }
     if (scope.script.module.length > 2) {
-      const temp = scope.script.module
+      const temp = scope.script.module;
       scope.script.moduleRange = [
         new vscode.Position(temp[0].lineNumber, 0),
-        new vscode.Position(temp[temp.length-1].lineNumber, temp[temp.length-1].text.length)
-      ]
+        new vscode.Position(
+          temp[temp.length - 1].lineNumber,
+          temp[temp.length - 1].text.length
+        ),
+      ];
       const hasModules = await sortModule(scope.script);
       await patchData(scope.script.module, hasModules, scope.ast.render); //开始遍历全部module部分，对每一个小模块进行排序
     }
