@@ -64,7 +64,9 @@ const patchData = (moduleLines: any, hasModules: any, renderFunc: any) => {
   let computedParams: string[] = [];
   for (let i = 0; i < hasModulesKeys.length; i++) {
     const key = hasModulesKeys[i];
-    if (lifeCycleArr.includes(key)) {continue;}
+    if (lifeCycleArr.includes(key)) {
+      continue;
+    }
     let startIndex = 0;
     const moduleItem = moduleLines.find((item: any, index) => {
       if (item.text.match(new RegExp(`^\\s*${key}\\s*`))) {
@@ -123,7 +125,7 @@ const patchData = (moduleLines: any, hasModules: any, renderFunc: any) => {
   }
   //结束
   const res = moduleLines.map((item) => item.text).join("\n");
-  console.log(res)
+  console.log(res);
   return vscode.window.activeTextEditor.edit((builder: TextEditorEdit) => {
     builder.delete(new vscode.Range(start, end));
     builder.insert(start, res);
