@@ -11,6 +11,10 @@ const sortModule = async (script) => {
   let currentIndex = 999999; //init value
   let currentName = "";
   let deep = 0;
+  //if in methods have one function like this func(){}
+  //the deep not really add because this line have '{' and '}'
+  //to avoid this case,deep++ or deep-- both trigger heckTrick add one
+  let heckTrick = 0;
   const scopes = [
     "el",
     "name",
@@ -40,10 +44,12 @@ const sortModule = async (script) => {
 
   for (let index = 0; index < lines.length; index++) {
     const item = lines[index];
+    // debugger;
     const CE = isCommentOrEmpty(item);
     if (CE === IS_EMPTY) {
       continue;
     }
+    heckTrick = 0;
     copyLines.push({
       text: item.text,
       thisVarIndex: currentIndex,
@@ -75,13 +81,14 @@ const sortModule = async (script) => {
       (bracketStartIndex < commentIndex || commentIndex === -1)
     ) {
       deep++;
+      heckTrick++;
     }
     if (
       bracketEndIndex !== -1 &&
       (bracketEndIndex < commentIndex || commentIndex === -1)
     ) {
       deep--;
-
+      heckTrick++;
       if (deep === 0) {
         patchLastComma(item);
         copyLines[copyLines.length - 1].text = item.text;
@@ -94,12 +101,14 @@ const sortModule = async (script) => {
       (squareBracketStart < commentIndex || commentIndex === -1)
     ) {
       deep++;
+      heckTrick++;
     }
     if (
       squareBracketEnd !== -1 &&
       (squareBracketEnd < commentIndex || commentIndex === -1)
     ) {
       deep--;
+      heckTrick++;
       if (deep === 0) {
         currentIndex = 0;
       }
@@ -117,7 +126,10 @@ const sortModule = async (script) => {
       copyLines[copyLines.length - 1].thisVarIndex = indexFromScopes;
       currentIndex = indexFromScopes;
     }
-    if (!returnParams.hasOwnProperty(regVal[1])) {
+    if (
+      !returnParams.hasOwnProperty(regVal[1]) &&
+      (heckTrick < 2 || (heckTrick === 2 && deep === 0))
+    ) {
       currentName = regVal[1];
       returnParams[regVal[1]] = [];
     }
@@ -165,11 +177,10 @@ const sortModule = async (script) => {
   });
   script.module = copyLines;
 
-  const res =
-    copyLines
-      .filter((i) => i.text.length)
-      .map((item) => item.text)
-      .join("\n");
+  const res = copyLines
+    .filter((i) => i.text.length)
+    .map((item) => item.text)
+    .join("\n");
   await vscode.window.activeTextEditor.edit((builder: TextEditorEdit) => {
     builder.delete(
       new vscode.Range(script.moduleRange[0], script.moduleRange[1])
