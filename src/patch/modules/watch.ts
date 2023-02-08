@@ -6,7 +6,7 @@ import {
   patchLastCommaForSquareBracket,
 } from "../../utils/functions";
 
-export const processWatch = async (
+export const processWatch = (
   moduleLines: needFixVariableType[],
   range: rangeTye,
   dataParams,

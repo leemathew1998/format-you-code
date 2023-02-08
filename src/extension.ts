@@ -28,7 +28,7 @@ let formatOneFile = vscode.commands.registerCommand(
           temp[temp.length - 1].text.length
         ),
       ];
-      await sortImport(scope.script);
+      sortImport(scope.script);
     }
     // if (scope.style.length) {
     //   await sortCss(scope.style, scope.template);
@@ -42,10 +42,25 @@ let formatOneFile = vscode.commands.registerCommand(
           temp[temp.length - 1].text.length
         ),
       ];
-      const hasModules = await sortModule(scope.script);
-      debugger;
-      await patchData(scope.script.module, hasModules, scope.ast.render); //开始遍历全部module部分，对每一个小模块进行排序
+      const hasModules = sortModule(scope.script);
+      patchData(scope.script.module, hasModules, scope.ast.render); //开始遍历全部module部分，对每一个小模块进行排序
+      
     }
+    //start flash
+    let state1:any = [...scope.script.import, ...scope.script.module];
+    console.log(state1);
+    // state1 =
+    //   state1
+    //     .filter((i) => i.text.length)
+    //     .map((item) => item.text)
+    //     .join("\n") + "\n";
+    // await vscode.window.activeTextEditor.edit((builder: TextEditorEdit) => {
+    //   builder.delete(
+    //     new vscode.Range(imports.importRange[0], imports.importRange[1])
+    //   );
+    //   builder.insert(imports.importRange[0], res);
+    // });
+
 
     await vscode.commands.executeCommand("editor.action.formatDocument");
     // vscode.window.showInformationMessage("format-one-file");

@@ -3,7 +3,7 @@ import { TextEditorEdit } from "vscode";
 import { needFixVariableType } from "../type";
 import { IS_EMPTY } from "../utils/constants";
 import { isCommentOrEmpty, patchLastComma } from "../utils/functions";
-const sortModule = async (script) => {
+const sortModule = (script) => {
   let lines = script.module;
   let firstLineNumber = lines[0].lineNumber;
   let copyLines: needFixVariableType[] = [];
