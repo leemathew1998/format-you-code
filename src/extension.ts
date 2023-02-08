@@ -43,6 +43,7 @@ let formatOneFile = vscode.commands.registerCommand(
         ),
       ];
       const hasModules = await sortModule(scope.script);
+      debugger;
       await patchData(scope.script.module, hasModules, scope.ast.render); //开始遍历全部module部分，对每一个小模块进行排序
     }
 

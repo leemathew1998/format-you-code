@@ -30,10 +30,10 @@ export const processData = (
   let notEmptyData: needFixVariableType[] = [];
   for (let index = 0; index < needFixVariable.length; index++) {
     const CE = isCommentOrEmpty(needFixVariable[index]);
-    if (CE !== IS_EMPTY) {
+    // if (CE !== IS_EMPTY) {
       notEmptyData.push(needFixVariable[index]);
       notEmptyData[notEmptyData.length - 1].CE = CE;
-    }
+    // }
   }
 
   for (let index = 0; index < notEmptyData.length; index++) {

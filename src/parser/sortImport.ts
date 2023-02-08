@@ -72,13 +72,12 @@ const sortImport = (imports: any) => {
       .filter((i) => i.text.length)
       .map((item) => item.text)
       .join("\n") + "\n";
-  debugger;
-  return vscode.window.activeTextEditor.edit((builder: TextEditorEdit) => {
-    builder.delete(
-      new vscode.Range(imports.importRange[0], imports.importRange[1])
-    );
-    builder.insert(imports.importRange[0], res);
-  });
+  // return vscode.window.activeTextEditor.edit((builder: TextEditorEdit) => {
+  //   builder.delete(
+  //     new vscode.Range(imports.importRange[0], imports.importRange[1])
+  //   );
+  //   builder.insert(imports.importRange[0], res);
+  // });
 };
 
 export default sortImport;

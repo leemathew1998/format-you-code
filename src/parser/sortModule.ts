@@ -45,10 +45,6 @@ const sortModule = async (script) => {
   for (let index = 0; index < lines.length; index++) {
     const item = lines[index];
     // debugger;
-    const CE = isCommentOrEmpty(item);
-    if (CE === IS_EMPTY) {
-      continue;
-    }
     heckTrick = 0;
     copyLines.push({
       text: item.text,
@@ -177,16 +173,16 @@ const sortModule = async (script) => {
   });
   script.module = copyLines;
 
-  const res = copyLines
-    .filter((i) => i.text.length)
-    .map((item) => item.text)
-    .join("\n");
-  await vscode.window.activeTextEditor.edit((builder: TextEditorEdit) => {
-    builder.delete(
-      new vscode.Range(script.moduleRange[0], script.moduleRange[1])
-    );
-    builder.insert(script.moduleRange[0], res);
-  });
+  // const res = copyLines
+  //   .filter((i) => i.text.length)
+  //   .map((item) => item.text)
+  //   .join("\n");
+  // await vscode.window.activeTextEditor.edit((builder: TextEditorEdit) => {
+  //   builder.delete(
+  //     new vscode.Range(script.moduleRange[0], script.moduleRange[1])
+  //   );
+  //   builder.insert(script.moduleRange[0], res);
+  // });
 
   return returnParams;
 };

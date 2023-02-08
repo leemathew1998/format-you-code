@@ -32,10 +32,10 @@ export const processWatch = async (
   for (let index = 0; index < needFixVariable.length; index++) {
     // debugger
     const item = needFixVariable[index];
-    const CE = isCommentOrEmpty(item);
-    if (CE === IS_EMPTY) {
-      continue;
-    }
+    // const CE = isCommentOrEmpty(item);
+    // if (CE === IS_EMPTY) {
+    //   continue;
+    // }
     copyLines.push({
       text: item.text,
       thisVarIndex: currentIndex,

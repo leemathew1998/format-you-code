@@ -25,10 +25,10 @@ export const processComputed = (
   let copyLines: needFixVariableType[] = [];
   for (let index = 0; index < needFixVariable.length; index++) {
     const item = needFixVariable[index];
-    const CE = isCommentOrEmpty(item);
-    if (CE === IS_EMPTY) {
-      continue;
-    }
+    // const CE = isCommentOrEmpty(item);
+    // if (CE === IS_EMPTY) {
+    //   continue;
+    // }
     /**
      * first,give a init value, In this case,
      * it means that this line is also part of the function

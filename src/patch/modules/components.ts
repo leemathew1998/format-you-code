@@ -32,10 +32,10 @@ export const processComponents = (
   } else {
     for (let index = 0; index < needFixVariable.length; index++) {
       const item = needFixVariable[index];
-      const CE = isCommentOrEmpty(item);
-      if (CE === IS_EMPTY) {
-        continue;
-      }
+      // const CE = isCommentOrEmpty(item);
+      // if (CE === IS_EMPTY) {
+      //   continue;
+      // }
       //replace all the space
       const copy = item.text.replace(/\s/g, "");
 
