@@ -8,7 +8,7 @@ export const processComponents = (
   renderFunc: string
 ) => {
   /**
-   * slice data part
+   * slice components part
    * example:
       components: {
         XXX,
@@ -27,7 +27,8 @@ export const processComponents = (
       .replace(/\s/g, "")
       .split("components:{")[1]
       .split("}")[0]
-      .split(",");
+      .split(",")
+      .filter((i) => i.length);
   } else {
     for (let index = 0; index < needFixVariable.length; index++) {
       const item = needFixVariable[index];
@@ -35,19 +36,22 @@ export const processComponents = (
       if (CE === IS_EMPTY) {
         continue;
       }
-      copyLines.push({
-        text: item.text,
-      });
       //replace all the space
       const copy = item.text.replace(/\s/g, "");
 
       if (copy.indexOf("components:{") === -1 && copy.indexOf("}") === -1) {
         //if not the start or end, must be the components
-        components.push(item.text);
+        components.push(item.text.split(",")[0]);
       }
     }
   }
 
+  components.forEach((item) => {
+    copyLines.push({
+      text: item,
+    });
+  });
+  console.log("components", components);
   for (let i = 0; i < components.length; i++) {
     const item = components[i];
     const nameCopy = item.replace(/\s/g, "").split(",")[0];
@@ -80,16 +84,16 @@ export const processComponents = (
       continue;
     } else if (isshowCase1 && isshowCase2) {
       //if both case match, we use the smaller index
-      copyLines[i + 1].thisVarIndex = Math.min(
+      copyLines[i].thisVarIndex = Math.min(
         renderFunc.indexOf(isshowCase1[0]),
         renderFunc.indexOf(isshowCase2[0])
       );
     } else if (isshowCase1) {
       //if case1 match, we use case1
-      copyLines[i + 1].thisVarIndex = renderFunc.indexOf(isshowCase1[0]);
+      copyLines[i].thisVarIndex = renderFunc.indexOf(isshowCase1[0]);
     } else if (isshowCase2) {
       //if case2 match, we use case2
-      copyLines[i + 1].thisVarIndex = renderFunc.indexOf(isshowCase2[0]);
+      copyLines[i].thisVarIndex = renderFunc.indexOf(isshowCase2[0]);
     }
   }
   copyLines.sort((a, b) => {
@@ -98,13 +102,24 @@ export const processComponents = (
     }
     return 0;
   });
+  //add head and tail
+  copyLines.unshift({
+    text: "components: {",
+    lineNumber: firstLineNumber,
+  });
+  copyLines.push({
+    text: "},",
+  });
+  firstLineNumber!++;
   copyLines.forEach((item) => {
     item.lineNumber = firstLineNumber;
     firstLineNumber!++;
     if (item.thisVarIndex) {
+      item.text = item.text + ",";
       delete item.thisVarIndex;
       delete item.textCopy;
     }
   });
+  //insert the new components part
   moduleLines.splice(range.trueStartIndex!, 0, ...copyLines);
 };

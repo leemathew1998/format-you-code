@@ -11,7 +11,6 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:format-you-code.file",
     "onLanguage:vue"
   ],
   "main": "./out/extension.js",

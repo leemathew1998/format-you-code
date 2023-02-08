@@ -1,6 +1,6 @@
 import { needFixVariableType, rangeTye, returnParams } from "../../type";
 import { IS_COMMENT, IS_EMPTY, IS_STRING } from "../../utils/constants";
-import { isCommentOrEmpty, patchLastComma } from "../../utils/functions";
+import { isCommentOrEmpty, patchLastCommaForData } from "../../utils/functions";
 export const processData = (
   moduleLines: needFixVariableType[],
   range: rangeTye,
@@ -124,11 +124,7 @@ export const processData = (
     }
     if (deep === 1) {
       // incase this line has not "," but move to the top, will have a error
-      const trimTemp = item.text.trim();
-      if (trimTemp[trimTemp.length - 1] !== ",") {
-        item.text += ",";
-      }
-      copyLines[copyLines.length - 1].text = item.text;
+      copyLines[copyLines.length - 1].text = patchLastCommaForData(copyLines[copyLines.length - 1].text)
     }
     //If a parameter is prioritized/lagged,
     //it needs to be added at the start or end of the render string(renderFunc)
