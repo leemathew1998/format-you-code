@@ -96,7 +96,7 @@ export const processMethods = (
     copyLines[copyLines.length - 1].thisVarIndex = thisVarIndex;
     currentIndex = thisVarIndex;
   }
-  // console.log(copyLines)
+  console.log(copyLines)
   copyLines.sort((a, b) => a.thisVarIndex! - b.thisVarIndex!);
   copyLines.forEach((item) => {
     item.lineNumber = firstLineNumber;

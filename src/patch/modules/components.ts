@@ -41,7 +41,7 @@ export const processComponents = (
 
       if (copy.indexOf("components:{") === -1 && copy.indexOf("}") === -1) {
         //if not the start or end, must be the components
-        components.push(item.text.split(",")[0]);
+        components.push(item.text);
       }
     }
   }
@@ -51,10 +51,9 @@ export const processComponents = (
       text: item,
     });
   });
-  console.log("components", components);
   for (let i = 0; i < components.length; i++) {
     const item = components[i];
-    const nameCopy = item.replace(/\s/g, "").split(",")[0];
+    const nameCopy = item.replace(/\s/g, "").split("//")[0].split(",")[0];
     //if textCopy have upper case like submitDialogModal,
     //user can use <submit-dialog-modal> or <submitDialogModal> two ways
     let reg = new RegExp(`\\b${nameCopy}\\b`, "g");
@@ -81,6 +80,7 @@ export const processComponents = (
     }
     if (!isshowCase1 && !isshowCase2) {
       //two case both not match
+      copyLines[i].thisVarIndex = 99999
       continue;
     } else if (isshowCase1 && isshowCase2) {
       //if both case match, we use the smaller index
@@ -96,30 +96,42 @@ export const processComponents = (
       copyLines[i].thisVarIndex = renderFunc.indexOf(isshowCase2[0]);
     }
   }
-  copyLines.sort((a, b) => {
-    if (a.thisVarIndex && b.thisVarIndex) {
-      return a.thisVarIndex - b.thisVarIndex;
-    }
-    return 0;
-  });
-  //add head and tail
-  copyLines.unshift({
-    text: "components: {",
-    lineNumber: firstLineNumber,
-  });
-  copyLines.push({
-    text: "},",
-  });
-  firstLineNumber!++;
-  copyLines.forEach((item) => {
-    item.lineNumber = firstLineNumber;
-    firstLineNumber!++;
-    if (item.thisVarIndex) {
-      item.text = item.text + ",";
-      delete item.thisVarIndex;
-      delete item.textCopy;
-    }
-  });
+
+  //this have two type one line mode and muti line mode
+  const space = needFixVariable[0].text.split("components")[0];
+  if (needFixVariable.length === 1) {
+    let line = {
+      //need padding the space in front of components
+      text: `${space}components: {${copyLines.map((i) => i.text + ", ")}},`,
+      lineNumber: firstLineNumber,
+    };
+    copyLines = [line];
+  } else {
+    copyLines.sort((a, b) => {
+      if (a.thisVarIndex && b.thisVarIndex) {
+        return a.thisVarIndex - b.thisVarIndex;
+      }
+      return 0;
+    });
+    copyLines.forEach((item, i) => {
+      item.lineNumber = firstLineNumber;
+      firstLineNumber!++;
+      const haveComment = item.text.split("//")[1];
+      const pureText = item.text.split(",")[0];
+      item.text = `${pureText.trimEnd()},`;
+      if(haveComment.length){
+        item.text += ` //${haveComment}`
+      }
+    });
+    //add head and tail
+    copyLines.unshift({
+      text: `${space}components: {`,
+    });
+    copyLines.push({
+      text: `${space}},`,
+    });
+  }
+
   //insert the new components part
   moduleLines.splice(range.trueStartIndex!, 0, ...copyLines);
 };

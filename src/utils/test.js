@@ -21,7 +21,6 @@ const patchLastComma__test__ = (str) => {
   if (reg4.test(str)) {
     str = str.replace(reg4, "$1http://...");
   }
-  console.log(str);
   return str;
 };
-patchLastComma__test__("name:xxx,");
+
