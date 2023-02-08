@@ -69,7 +69,7 @@ export const processMethods = (
       }
     }
     //match two type: xxx(){、xxx(args){
-    let variableName = item.textCopy.match(/(\w+)\((\w+)?\)\{/);
+    let variableName = item.textCopy.match(/(\w+)\(([\w,]+)?\)\{/);
 
     if (!variableName || deep > 1) {
       continue
@@ -96,6 +96,7 @@ export const processMethods = (
     copyLines[copyLines.length - 1].thisVarIndex = thisVarIndex;
     currentIndex = thisVarIndex;
   }
+  // console.log(copyLines)
   copyLines.sort((a, b) => a.thisVarIndex! - b.thisVarIndex!);
   copyLines.forEach((item) => {
     item.lineNumber = firstLineNumber;

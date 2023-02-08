@@ -12,8 +12,6 @@ const patchData = (moduleLines: any, hasModules: any, renderFunc: any) => {
     lastLine,
     moduleLines[moduleLines.length - 1].text.length
   );
-  console.log(moduleLines);
-  console.log(lastLine);
   let priorityList = {};
   //hasModulesKeys中需要先遍历完lifeCycleArr，然后再处理别的参数
   const lifeCycleFirst = hasModulesKeys.filter((key) => {
@@ -125,12 +123,11 @@ const patchData = (moduleLines: any, hasModules: any, renderFunc: any) => {
   }
   //结束
   const res = moduleLines.map((item) => item.text).join("\n");
-  console.log(res)
-  // console.log(moduleLines)
-  // return vscode.window.activeTextEditor.edit((builder: TextEditorEdit) => {
-  //   builder.delete(new vscode.Range(start, end));
-  //   builder.insert(start, res);
-  // });
+  // console.log(res)
+  return vscode.window.activeTextEditor.edit((builder: TextEditorEdit) => {
+    builder.delete(new vscode.Range(start, end));
+    builder.insert(start, res);
+  });
 };
 
 export default patchData;

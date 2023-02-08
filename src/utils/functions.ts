@@ -72,7 +72,7 @@ const patchLastComma = (item) => {
   if (commentIndex > 0) {
     //like this-> xxx//
     //if have brackets, there have two type
-    // 1.//}  2.}//
+    // 1.xxxxx //}  2.xxxxx}//  3.xxx:'https://...'  4.xxx:'https://...' //xsssss
     const temp = item.text.split("//");
     const trim0Temp = temp[0].trim();
     const trim1Temp = temp[1].trim();
@@ -105,6 +105,10 @@ const patchLastComma = (item) => {
     }
   }
 };
+const patchLastComma__test__ = ()=>{
+  var re = /(.*?)(\/\/.*)?$/;
+  
+}
 const patchLastCommaForSquareBracket = (item) => {
   if (item.text.indexOf("*") !== -1) return;
   const commentIndex = item.text.indexOf("//");
@@ -149,5 +153,6 @@ export {
   flatHtmlNodesFunc,
   isCommentOrEmpty,
   patchLastComma,
-  patchLastCommaForSquareBracket
+  patchLastCommaForSquareBracket,
+  patchLastComma__test__
 };

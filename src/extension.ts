@@ -19,8 +19,6 @@ let formatOneFile = vscode.commands.registerCommand(
     }
     const scope = parserFile(res!.document);
 
-    let scopeCopy = JSON.parse(JSON.stringify(scope))
-    console.log(scopeCopy)
     if (scope.script.import.length) {
       const temp = scope.script.import
       scope.script.importRange = [

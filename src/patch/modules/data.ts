@@ -124,7 +124,10 @@ export const processData = (
     }
     if (deep === 1) {
       // incase this line has not "," but move to the top, will have a error
-      patchLastComma(item);
+      const trimTemp = item.text.trim();
+      if (trimTemp[trimTemp.length - 1] !== ",") {
+        item.text += ",";
+      }
       copyLines[copyLines.length - 1].text = item.text;
     }
     //If a parameter is prioritized/lagged,
@@ -153,6 +156,8 @@ export const processData = (
     currentIndex = thisVarIndex;
     copyLines[copyLines.length - 1].thisVarIndex = thisVarIndex;
   }
+
+  // console.log(copyLines)
   copyLines.sort((a, b) => {
     if (a.thisVarIndex && b.thisVarIndex) {
       return a.thisVarIndex - b.thisVarIndex;
