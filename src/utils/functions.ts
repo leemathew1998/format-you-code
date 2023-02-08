@@ -67,7 +67,9 @@ const isCommentOrEmpty = (item) => {
 };
 
 const patchLastComma = (item) => {
-  if (item.text.indexOf("*") !== -1) return;
+  if (item.text.indexOf("*") !== -1) {
+    return;
+  }
   const commentIndex = item.text.indexOf("//");
   if (commentIndex > 0) {
     //like this-> xxx//
@@ -105,12 +107,13 @@ const patchLastComma = (item) => {
     }
   }
 };
-const patchLastComma__test__ = ()=>{
-  var re = /(.*?)(\/\/.*)?$/;
-  
-}
+
+
+
 const patchLastCommaForSquareBracket = (item) => {
-  if (item.text.indexOf("*") !== -1) return;
+  if (item.text.indexOf("*") !== -1) {
+    return;
+  }
   const commentIndex = item.text.indexOf("//");
   if (commentIndex > 0) {
     //like this-> xxx//
@@ -154,5 +157,4 @@ export {
   isCommentOrEmpty,
   patchLastComma,
   patchLastCommaForSquareBracket,
-  patchLastComma__test__
 };
