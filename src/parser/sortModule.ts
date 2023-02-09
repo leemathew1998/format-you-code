@@ -26,6 +26,7 @@ const sortModule = (script) => {
     "validate",
     "model",
     "props",
+    "directives",
     "fetch",
     "data",
     "setup",
