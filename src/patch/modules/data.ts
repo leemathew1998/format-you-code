@@ -169,10 +169,10 @@ export const processData = (
     const reg = new RegExp(`\\b${variableName[1]}\\b`, "g");
     const isshow = renderFunc.match(reg);
     if (!isshow) {
-      if (deep === 1) {
+      // if (deep === 1) {
         copyLines[copyLines.length - 1].thisVarIndex = 99999;
         currentIndex = 99999;
-      }
+      // }
       continue;
     }
     const thisVarIndex = renderFunc.indexOf(isshow[0]);
@@ -183,6 +183,7 @@ export const processData = (
     currentIndex = thisVarIndex;
     copyLines[copyLines.length - 1].thisVarIndex = thisVarIndex;
   }
+  // debugger
   copyLines.sort((a, b) => {
     if (a.thisVarIndex && b.thisVarIndex) {
       return a.thisVarIndex - b.thisVarIndex;

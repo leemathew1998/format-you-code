@@ -134,7 +134,31 @@ const patchLastCommaForData = (str) => {
   return str;
 };
 
-
+const patchLastCommaForMethods = (str) => {
+  /**
+   * 给定一个字符串，判断是不是以逗号结尾，如果不是，就加上逗号,如果是，就不加
+   * 但是由于string会有注释的情况，所以需要判断有没有//，如果有，就需要判断//之前有没有逗号
+   */
+  const reg = /([^,])$/;
+  if (reg.test(str)) {
+    str = str + ",";
+  } else {
+    const commentIndex = str.indexOf("//");
+    if (commentIndex > 0) {
+      const temp = str.split("//");
+      const trim0Temp = temp[0].trim();
+      const trim1Temp = temp[1].trim();
+      if (trim0Temp[trim0Temp.length - 1] !== ",") {
+        temp[0] += ",";
+        temp[1] = "//" + temp[1];
+        str = temp.join("");
+      }
+    }
+  }
+  console.log(str);
+  return str;
+};
+patchLastCommaForMethods('nihao//nihao')
 const patchLastCommaForSquareBracket = (item) => {
   if (item.text.indexOf("*") !== -1) {
     return;

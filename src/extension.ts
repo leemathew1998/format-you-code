@@ -57,13 +57,14 @@ let formatOneFile = vscode.commands.registerCommand(
       .filter((i) => i.text.length)
       .map((item) => item.text)
       .join("\n");
-    console.log(state1);
     await vscode.window.activeTextEditor!.edit((builder: TextEditorEdit) => {
       builder.delete(new vscode.Range(start, end));
       builder.insert(start, state1);
     });
+    setTimeout(async () => {
+      await vscode.commands.executeCommand("editor.action.formatDocument");
+    }, 200);
 
-    await vscode.commands.executeCommand("editor.action.formatDocument");
     // vscode.window.showInformationMessage("format-one-file");
   }
 );

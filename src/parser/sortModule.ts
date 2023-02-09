@@ -68,11 +68,14 @@ const sortModule = (script) => {
       copyLines[copyLines.length - 1].thisVarIndex = 1000000;
       continue;
     }
-    const bracketStartIndex = item.textCopy.indexOf("{");
-    const bracketEndIndex = item.textCopy.indexOf("}");
+    const bracketStartIndex = item.textCopy.lastIndexOf("{");
+    const bracketEndIndex = item.textCopy.lastIndexOf("}");
     const squareBracketStart = item.textCopy.indexOf("[");
     const squareBracketEnd = item.textCopy.indexOf("]");
     const commentIndex = item.textCopy.indexOf("//");
+    //计算{和}出现的次数,如果是奇数，可能为xxx},或者{}...}的情况,如果是偶数，可能为{xxx}或者}...{的情况
+    const bracketStartCount = item.textCopy.match(/{/g)?.length ?? 0;
+    const bracketEndCount = item.textCopy.match(/}/g)?.length ?? 0;
     let quotationIndex1: any = item.textCopy.slice(
       Math.min(commentIndex, bracketEndIndex),
       Math.max(commentIndex, bracketEndIndex)
@@ -98,11 +101,17 @@ const sortModule = (script) => {
       heckTrick++;
     }
     if (
-      bracketEndIndex !== -1 &&
-      (bracketEndIndex < commentIndex ||
-        commentIndex === -1 ||
-        (bracketEndIndex > commentIndex && quotationIndex1 !== -1))
+      (bracketEndIndex !== -1 &&
+        (bracketEndIndex < commentIndex ||
+          commentIndex === -1 ||
+          (bracketEndIndex > commentIndex && quotationIndex1 !== -1)) &&
+        (bracketEndCount + bracketStartCount) % 2 &&
+        bracketEndCount > bracketStartCount) ||
+      (bracketStartCount === bracketEndCount && bracketStartCount !== 0)
     ) {
+      /**
+       * {}}| {}{}} | {}{ | }{}{ | {} | }{
+       */
       deep--;
       heckTrick++;
       if (deep === 0) {

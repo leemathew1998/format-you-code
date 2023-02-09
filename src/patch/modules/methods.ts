@@ -1,6 +1,10 @@
 import { needFixVariableType, rangeTye } from "../../type";
 import { IS_EMPTY } from "../../utils/constants";
-import { isCommentOrEmpty, patchLastComma } from "../../utils/functions";
+import {
+  isCommentOrEmpty,
+  patchLastComma,
+  patchLastCommaForData,
+} from "../../utils/functions";
 
 export const processMethods = (
   moduleLines: needFixVariableType[],
@@ -47,9 +51,12 @@ export const processMethods = (
       copyLines[copyLines.length - 1].thisVarIndex = 1000000;
       continue;
     }
-    const bracketStartIndex = item.textCopy.indexOf("{");
-    const bracketEndIndex = item.textCopy.indexOf("}");
+    const bracketStartIndex = item.textCopy.lastIndexOf("{");
+    const bracketEndIndex = item.textCopy.lastIndexOf("}");
     const commentIndex = item.textCopy.indexOf("//");
+    //计算{和}出现的次数,如果是奇数，可能为xxx},或者{}...}的情况,如果是偶数，可能为{xxx}或者}...{的情况
+    const bracketStartCount = item.textCopy.match(/{/g)?.length ?? 0;
+    const bracketEndCount = item.textCopy.match(/}/g)?.length ?? 0;
     if (
       bracketStartIndex !== -1 &&
       (bracketStartIndex < commentIndex || commentIndex === -1)
@@ -57,8 +64,9 @@ export const processMethods = (
       deep++;
     }
     if (
-      bracketEndIndex !== -1 &&
-      (bracketEndIndex < commentIndex || commentIndex === -1)
+(      bracketEndIndex !== -1 &&
+  (bracketEndIndex < commentIndex || commentIndex === -1) &&
+  bracketEndIndex > bracketStartIndex)
     ) {
       deep--;
 
@@ -69,7 +77,7 @@ export const processMethods = (
       }
     }
     //match two type: xxx(){、xxx(args){
-    let variableName = item.textCopy.match(/(\w+)\(([\w,]+)?\)\{/);
+    let variableName = item.textCopy.match(/(\w+)\((\S+)?\)\{/);
 
     if (!variableName || deep > 1) {
       continue;
@@ -96,6 +104,7 @@ export const processMethods = (
     copyLines[copyLines.length - 1].thisVarIndex = thisVarIndex;
     currentIndex = thisVarIndex;
   }
+
   copyLines.sort((a, b) => a.thisVarIndex! - b.thisVarIndex!);
   copyLines.forEach((item) => {
     item.lineNumber = firstLineNumber;

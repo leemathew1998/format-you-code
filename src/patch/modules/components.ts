@@ -18,7 +18,6 @@ export const processComponents = (
     range.trueStartIndex!,
     range.trueEndIndex! - range.trueStartIndex! + 1
   );
-
   let firstLineNumber = needFixVariable[0].lineNumber;
   let copyLines: needFixVariableType[] = [];
   let components: string[] = [];
@@ -98,28 +97,31 @@ export const processComponents = (
   }
   //this have two type one line mode and muti line mode
   const space = needFixVariable[0].text.split("components")[0];
+  copyLines.sort((a, b) => {
+    if (a.thisVarIndex && b.thisVarIndex) {
+      return a.thisVarIndex - b.thisVarIndex;
+    }
+    return 0;
+  });
   if (needFixVariable.length === 1) {
     let line = {
       //need padding the space in front of components
-      text: `${space}components: { ${copyLines.map((i) => i.text + ", ")}},`,
+      text: `${space}components: { ${copyLines.map((i) => i.text)}},`,
       lineNumber: firstLineNumber,
     };
     copyLines = [line];
   } else {
-    copyLines.sort((a, b) => {
-      if (a.thisVarIndex && b.thisVarIndex) {
-        return a.thisVarIndex - b.thisVarIndex;
-      }
-      return 0;
-    });
     copyLines.forEach((item, i) => {
       item.lineNumber = firstLineNumber;
       firstLineNumber!++;
-      const haveComment = item.text.split("//")[1];
-      const pureText = item.text.split(",")[0];
-      item.text = `${pureText.trimEnd()},`;
-      if (haveComment?.length) {
-        item.text += ` //${haveComment}`;
+      const CE = isCommentOrEmpty(item);
+      if (CE !== IS_EMPTY) {
+        const haveComment = item.text.split("//")[1];
+        const pureText = item.text.split(",")[0];
+        item.text = `${pureText.trimEnd()},`;
+        if (haveComment?.length) {
+          item.text += ` //${haveComment}`;
+        }
       }
     });
     //add head and tail

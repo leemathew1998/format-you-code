@@ -1,26 +1,14 @@
-const patchLastComma__test__ = (str) => {
-  //需要在每一行最后判断是不是加了逗号，如果没有加，就加上，以下是各种情况
-  //1.如果是xxxxx这种，就直接加逗号
-  //2.如果是xxxxx//...这种，就需要判断//之前有没有逗号
-  //3.如果是http://xxx这种,就不需要加逗号,但是如果是http://xxx //...这种，就需要判断第二个//之前有没有逗号
-  //开始对每种情况写正则
-  const reg1 = /([^,])$/;
-  const reg2 = /([^,])\/\/\.\.\./;
-  const reg3 = /([^,])http:\/\//;
-  const reg4 = /([^,])http:\/\/\.\.\./;
-  //开始判断
-  if (reg1.test(str)) {
-    str = str + ",";
+const patchLastCommaForMethods = (str) => {
+  /**
+   * 给定一个字符串，判断是不是以逗号结尾，如果不是，就加上逗号,如果是，就不加。例如xxxx --> xxxx,
+   * 但是由于str会有特殊的情况，如果是有//的，那就需要判断//之前有没有逗号，如果有，就不加，如果没有，就加。例如xxxx//yyyy --> xxxx,//yyyy
+   */
+  const index = str.lastIndexOf('//');
+  if (index === -1) {
+    return str.endsWith(',') ? str : `${str},`;
   }
-  if (reg2.test(str)) {
-    str = str.replace(reg2, "$1, //...");
-  }
-  if (reg3.test(str)) {
-    str = str.replace(reg3, "$1http://");
-  }
-  if (reg4.test(str)) {
-    str = str.replace(reg4, "$1http://...");
-  }
-  return str;
+  const str1 = str.substring(0, index);
+  const str2 = str.substring(index);
+  return str1.endsWith(',') ? `${str1}${str2}` : `${str1},${str2}`;
 };
-
+console.log(patchLastCommaForMethods('setOptions({ expectedData, actualData } = {}) {'))
