@@ -45,7 +45,7 @@ const sortModule = (script) => {
 
   for (let index = 0; index < lines.length; index++) {
     const item = lines[index];
-    // debugger;
+    // debugger
     heckTrick = 0;
     copyLines.push({
       text: item.text,
@@ -73,6 +73,23 @@ const sortModule = (script) => {
     const squareBracketStart = item.textCopy.indexOf("[");
     const squareBracketEnd = item.textCopy.indexOf("]");
     const commentIndex = item.textCopy.indexOf("//");
+    let quotationIndex1: any = item.textCopy.slice(
+      Math.min(commentIndex, bracketEndIndex),
+      Math.max(commentIndex, bracketEndIndex)
+    );
+    quotationIndex1 =
+      quotationIndex1.indexOf("'") === -1
+        ? quotationIndex1.indexOf('"')
+        : quotationIndex1.indexOf("'");
+
+    let quotationIndex2: any = item.textCopy.slice(
+      Math.min(commentIndex, squareBracketEnd),
+      Math.max(commentIndex, squareBracketEnd)
+    );
+    quotationIndex2 =
+      quotationIndex2.indexOf("'") === -1
+        ? quotationIndex2.indexOf('"')
+        : quotationIndex2.indexOf("'");
     if (
       bracketStartIndex !== -1 &&
       (bracketStartIndex < commentIndex || commentIndex === -1)
@@ -82,7 +99,9 @@ const sortModule = (script) => {
     }
     if (
       bracketEndIndex !== -1 &&
-      (bracketEndIndex < commentIndex || commentIndex === -1)
+      (bracketEndIndex < commentIndex ||
+        commentIndex === -1 ||
+        (bracketEndIndex > commentIndex && quotationIndex1 !== -1))
     ) {
       deep--;
       heckTrick++;
@@ -102,7 +121,9 @@ const sortModule = (script) => {
     }
     if (
       squareBracketEnd !== -1 &&
-      (squareBracketEnd < commentIndex || commentIndex === -1)
+      (squareBracketEnd < commentIndex ||
+        commentIndex === -1 ||
+        (squareBracketEnd > commentIndex && quotationIndex2 !== -1))
     ) {
       deep--;
       heckTrick++;
@@ -165,6 +186,7 @@ const sortModule = (script) => {
       }
     }
   }
+  // debugger
   //start sort
   copyLines.sort((a, b) => a.thisVarIndex! - b.thisVarIndex!);
   copyLines.forEach((item) => {

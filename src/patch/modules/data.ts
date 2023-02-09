@@ -14,6 +14,7 @@ export const processData = (
    *   name:'111'
    * }
    */
+  // debugger
   let needFixVariable: needFixVariableType[] = moduleLines.splice(
     range.trueStartIndex!,
     range.trueEndIndex! - range.trueStartIndex! + 1
@@ -21,7 +22,7 @@ export const processData = (
   //return a new sorted list
   const returnParams: returnParams[] = [];
   let firstLineNumber = needFixVariable[0].lineNumber;
-  let currentIndex = 0; //init value
+  let currentIndex = -100; //init value
   let deep = 0;
   //start sort the data module
   let copyLines: needFixVariableType[] = [];
@@ -31,8 +32,8 @@ export const processData = (
   for (let index = 0; index < needFixVariable.length; index++) {
     const CE = isCommentOrEmpty(needFixVariable[index]);
     // if (CE !== IS_EMPTY) {
-      notEmptyData.push(needFixVariable[index]);
-      notEmptyData[notEmptyData.length - 1].CE = CE;
+    notEmptyData.push(needFixVariable[index]);
+    notEmptyData[notEmptyData.length - 1].CE = CE;
     // }
   }
 
@@ -47,12 +48,6 @@ export const processData = (
     if (item.textCopy.indexOf("data(){") !== -1) {
       copyLines[copyLines.length - 1].thisVarIndex = -1000;
       continue;
-    } else if (
-      item.textCopy.indexOf("}") !== -1 &&
-      index === notEmptyData.length - 1
-    ) {
-      copyLines[copyLines.length - 1].thisVarIndex = 1000000;
-      continue;
     } else if (item.textCopy.indexOf("return{") !== -1 && deep === 0) {
       copyLines[copyLines.length - 1].thisVarIndex = -1;
       deep = 1;
@@ -60,10 +55,9 @@ export const processData = (
       continue;
     } else if (
       item.textCopy.indexOf("}") !== -1 &&
-      index === notEmptyData.length - 2
+      index === notEmptyData.length - 1
     ) {
-      copyLines[copyLines.length - 1].thisVarIndex = 999999;
-      deep--;
+      copyLines[copyLines.length - 1].thisVarIndex = 1000000;
       continue;
     }
     if (!isEnterReturn) {
@@ -74,7 +68,24 @@ export const processData = (
     const bracketEndIndex = item.text.indexOf("}");
     const squareBracketStart = item.textCopy.indexOf("[");
     const squareBracketEnd = item.textCopy.indexOf("]");
-    const commentIndex = item.text.indexOf("//");
+    const commentIndex = item.textCopy.indexOf("//");
+    let quotationIndex1: any = item.textCopy.slice(
+      Math.min(commentIndex, bracketEndIndex),
+      Math.max(commentIndex, bracketEndIndex)
+    );
+    quotationIndex1 =
+      quotationIndex1.indexOf("'") === -1
+        ? quotationIndex1.indexOf('"')
+        : quotationIndex1.indexOf("'");
+
+    let quotationIndex2: any = item.textCopy.slice(
+      Math.min(commentIndex, squareBracketEnd),
+      Math.max(commentIndex, squareBracketEnd)
+    );
+    quotationIndex2 =
+      quotationIndex2.indexOf("'") === -1
+        ? quotationIndex2.indexOf('"')
+        : quotationIndex2.indexOf("'");
     if (
       bracketStartIndex !== -1 &&
       (bracketStartIndex < commentIndex || commentIndex === -1)
@@ -89,12 +100,16 @@ export const processData = (
     }
     if (
       bracketEndIndex !== -1 &&
-      (bracketEndIndex < commentIndex || commentIndex === -1)
+      (bracketEndIndex < commentIndex ||
+        commentIndex === -1 ||
+        (bracketEndIndex > commentIndex && quotationIndex1 !== -1))
     ) {
       deep--;
       oneShort = false;
       if (deep === 0) {
         currentIndex = 0;
+        copyLines[copyLines.length - 1].thisVarIndex = 999999;
+        continue;
       }
     }
     // for square bracket
@@ -107,13 +122,21 @@ export const processData = (
     }
     if (
       squareBracketEnd !== -1 &&
-      (squareBracketEnd < commentIndex || commentIndex === -1)
+      (squareBracketEnd < commentIndex ||
+        commentIndex === -1 ||
+        (squareBracketEnd > commentIndex && quotationIndex2 !== -1))
     ) {
       deep--;
       oneShort = false;
       if (deep === 0) {
         currentIndex = 0;
       }
+    }
+    if (deep === 1) {
+      // incase this line has not "," but move to the top, will have a error
+      copyLines[copyLines.length - 1].text = patchLastCommaForData(
+        copyLines[copyLines.length - 1].text
+      );
     }
     let variableName = item.text.match(/(\w+)\s*[:|,]/);
 
@@ -133,12 +156,7 @@ export const processData = (
         thisVarIndex: 999999,
       });
     }
-    if (deep === 1) {
-      // incase this line has not "," but move to the top, will have a error
-      copyLines[copyLines.length - 1].text = patchLastCommaForData(
-        copyLines[copyLines.length - 1].text
-      );
-    }
+
     //If a parameter is prioritized/lagged,
     //it needs to be added at the start or end of the render string(renderFunc)
     if (priorityList.first.includes(variableName[1])) {
@@ -152,8 +170,8 @@ export const processData = (
     const isshow = renderFunc.match(reg);
     if (!isshow) {
       if (deep === 1) {
-        copyLines[copyLines.length - 1].thisVarIndex = 9999;
-        currentIndex = 9999;
+        copyLines[copyLines.length - 1].thisVarIndex = 99999;
+        currentIndex = 99999;
       }
       continue;
     }

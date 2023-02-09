@@ -53,12 +53,11 @@ let formatOneFile = vscode.commands.registerCommand(
       state1[state1.length - 1].lineNumber,
       state1[state1.length - 1].text.length
     );
-    state1 =
-      state1
-        .filter((i) => i.text.length)
-        .map((item) => item.text)
-        .join("\n") + "\n";
-        
+    state1 = state1
+      .filter((i) => i.text.length)
+      .map((item) => item.text)
+      .join("\n");
+    console.log(state1);
     await vscode.window.activeTextEditor!.edit((builder: TextEditorEdit) => {
       builder.delete(new vscode.Range(start, end));
       builder.insert(start, state1);
