@@ -2,7 +2,7 @@
   "name": "format-you-code",
   "displayName": "format-you-code",
   "description": "",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "azureCode": "hcz565yd55yii55qyk7654o5npzwutqvrwcktp2ckep6rc2fahqa",
   "engines": {
     "vscode": "^1.74.0"
