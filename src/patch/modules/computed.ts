@@ -53,41 +53,24 @@ export const processComputed = (
       copyLines[copyLines.length - 1].thisVarIndex = 1000000;
       continue;
     }
-    const bracketStartIndex = item.textCopy.indexOf("{");
-    const bracketEndIndex = item.textCopy.indexOf("}");
-    const commentIndex = item.textCopy.indexOf("//");
-    /**
-     * type1:   [{ //]  bS:0  c:2
-     * type2:   [{   ]  bS:0  c:-1
-     * type3:   [// {]  bS:2  c:0
-     * type4:   [//  ]  bS:-1 c:0
-     */
-    if (
-      bracketStartIndex !== -1 &&
-      (bracketStartIndex < commentIndex || commentIndex === -1)
-    ) {
-      // type1 or type2
-      deep++;
-    }
-    /**
-     * type5:   [} //]  bE:0  c:2
-     * type6:   [}   ]  bE:0  c:-1
-     * type7:   [// }]  bE:2  c:0
-     * type8:   [//  ]  bE:-1 c:0
-     */
-    if (
-      bracketEndIndex !== -1 &&
-      (bracketEndIndex < commentIndex || commentIndex === -1)
-    ) {
-      //type5 or type6
-      deep--;
-
-      if (deep === 0) {
-        patchLastComma(item);
-        copyLines[copyLines.length - 1].text = item.text;
-        currentIndex = 999999;
+    const arr = item.textCopy.match(/({|}|\[|\]|\/\/)/g);
+    if (arr) {
+      for (let key = 0; key < arr.length; key++) {
+        if (arr[key] === "//") {
+          break;
+        } else if (arr[key] === "{" || arr[key] === "[") {
+          deep++;
+        } else if (arr[key] === "}" || arr[key] === "]") {
+          deep--;
+        }
       }
     }
+    if (deep === 0) {
+      patchLastComma(item);
+      copyLines[copyLines.length - 1].text = item.text;
+      currentIndex = 999999;
+    }
+    
     //match two type: xxx(){、xxx(args){
     let variableName = item.textCopy.match(/(\w+)\((\w+)?\)\{/);
 

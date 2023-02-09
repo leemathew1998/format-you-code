@@ -51,31 +51,25 @@ export const processMethods = (
       copyLines[copyLines.length - 1].thisVarIndex = 1000000;
       continue;
     }
-    const bracketStartIndex = item.textCopy.lastIndexOf("{");
-    const bracketEndIndex = item.textCopy.lastIndexOf("}");
-    const commentIndex = item.textCopy.indexOf("//");
-    //计算{和}出现的次数,如果是奇数，可能为xxx},或者{}...}的情况,如果是偶数，可能为{xxx}或者}...{的情况
-    const bracketStartCount = item.textCopy.match(/{/g)?.length ?? 0;
-    const bracketEndCount = item.textCopy.match(/}/g)?.length ?? 0;
-    if (
-      bracketStartIndex !== -1 &&
-      (bracketStartIndex < commentIndex || commentIndex === -1)
-    ) {
-      deep++;
-    }
-    if (
-(      bracketEndIndex !== -1 &&
-  (bracketEndIndex < commentIndex || commentIndex === -1) &&
-  bracketEndIndex > bracketStartIndex)
-    ) {
-      deep--;
-
-      if (deep === 0) {
-        patchLastComma(item);
-        copyLines[copyLines.length - 1].text = item.text;
-        currentIndex = 999999;
+    //把item.textCopy中的{,},[,],//拆出来一个数组
+    const arr = item.textCopy.match(/({|}|\[|\]|\/\/)/g);
+    if (arr) {
+      for (let key = 0; key < arr.length; key++) {
+        if (arr[key] === "//") {
+          break;
+        } else if (arr[key] === "{" || arr[key] === "[") {
+          deep++;
+        } else if (arr[key] === "}" || arr[key] === "]") {
+          deep--;
+        }
       }
     }
+    if (deep === 0) {
+      patchLastComma(item);
+      copyLines[copyLines.length - 1].text = item.text;
+      currentIndex = 999999;
+    }
+
     //match two type: xxx(){、xxx(args){
     let variableName = item.textCopy.match(/(\w+)\((\S+)?\)\{/);
 

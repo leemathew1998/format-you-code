@@ -51,46 +51,25 @@ export const processWatch = (
       copyLines[copyLines.length - 1].thisVarIndex = 1000000;
       continue;
     }
-    const bracketStartIndex = item.textCopy.indexOf("{");
-    const bracketEndIndex = item.textCopy.indexOf("}");
-    const squareBracketStart = item.textCopy.indexOf("[");
-    const squareBracketEnd = item.textCopy.indexOf("]");
-    const commentIndex = item.textCopy.indexOf("//");
-    if (
-      bracketStartIndex !== -1 &&
-      (bracketStartIndex < commentIndex || commentIndex === -1)
-    ) {
-      deep++;
-    }
-    if (
-      bracketEndIndex !== -1 &&
-      (bracketEndIndex < commentIndex || commentIndex === -1)
-    ) {
-      deep--;
-      if (deep === 0) {
-        patchLastComma(item);
-        copyLines[copyLines.length - 1].text = item.text;
-        currentIndex = 999999;
+
+    const arr = item.textCopy.match(/({|}|\[|\]|\/\/)/g);
+    if (arr) {
+      for (let key = 0; key < arr.length; key++) {
+        if (arr[key] === "//") {
+          break;
+        } else if (arr[key] === "{" || arr[key] === "[") {
+          deep++;
+        } else if (arr[key] === "}" || arr[key] === "]") {
+          deep--;
+        }
       }
     }
-    // for square bracket
-    if (
-      squareBracketStart !== -1 &&
-      (squareBracketStart < commentIndex || commentIndex === -1)
-    ) {
-      deep++;
+    if (deep === 0) {
+      patchLastComma(item);
+      copyLines[copyLines.length - 1].text = item.text;
+      currentIndex = 999999;
     }
-    if (
-      squareBracketEnd !== -1 &&
-      (squareBracketEnd < commentIndex || commentIndex === -1)
-    ) {
-      deep--;
-      if (deep === 0) {
-        patchLastCommaForSquareBracket(item);
-        copyLines[copyLines.length - 1].text = item.text;
-        currentIndex = 999999;
-      }
-    }
+
     if (deep > 1) {
       continue;
     }

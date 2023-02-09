@@ -64,73 +64,24 @@ export const processData = (
       //if not enter return{}, just skip
       continue;
     }
-    const bracketStartIndex = item.text.indexOf("{");
-    const bracketEndIndex = item.text.indexOf("}");
-    const squareBracketStart = item.textCopy.indexOf("[");
-    const squareBracketEnd = item.textCopy.indexOf("]");
-    const commentIndex = item.textCopy.indexOf("//");
-    let quotationIndex1: any = item.textCopy.slice(
-      Math.min(commentIndex, bracketEndIndex),
-      Math.max(commentIndex, bracketEndIndex)
-    );
-    quotationIndex1 =
-      quotationIndex1.indexOf("'") === -1
-        ? quotationIndex1.indexOf('"')
-        : quotationIndex1.indexOf("'");
-
-    let quotationIndex2: any = item.textCopy.slice(
-      Math.min(commentIndex, squareBracketEnd),
-      Math.max(commentIndex, squareBracketEnd)
-    );
-    quotationIndex2 =
-      quotationIndex2.indexOf("'") === -1
-        ? quotationIndex2.indexOf('"')
-        : quotationIndex2.indexOf("'");
-    if (
-      bracketStartIndex !== -1 &&
-      (bracketStartIndex < commentIndex || commentIndex === -1)
-    ) {
-      deep++;
-      /**
-       * if like this xxx:{ -->deep===2,will skip, nooooop
-       * a:1  -->deep===2,will skip, yes
-       * }
-       */
-      oneShort = true;
-    }
-    if (
-      bracketEndIndex !== -1 &&
-      (bracketEndIndex < commentIndex ||
-        commentIndex === -1 ||
-        (bracketEndIndex > commentIndex && quotationIndex1 !== -1))
-    ) {
-      deep--;
-      oneShort = false;
-      if (deep === 0) {
-        currentIndex = 0;
-        copyLines[copyLines.length - 1].thisVarIndex = 999999;
-        continue;
+    const arr = item.textCopy.match(/({|}|\[|\]|\/\/)/g);
+    if (arr) {
+      for (let key = 0; key < arr.length; key++) {
+        if (arr[key] === "//") {
+          break;
+        } else if (arr[key] === "{" || arr[key] === "[") {
+          deep++;
+          oneShort = true;
+        } else if (arr[key] === "}" || arr[key] === "]") {
+          deep--;
+          oneShort = false;
+        }
       }
     }
-    // for square bracket
-    if (
-      squareBracketStart !== -1 &&
-      (squareBracketStart < commentIndex || commentIndex === -1)
-    ) {
-      deep++;
-      oneShort = true;
-    }
-    if (
-      squareBracketEnd !== -1 &&
-      (squareBracketEnd < commentIndex ||
-        commentIndex === -1 ||
-        (squareBracketEnd > commentIndex && quotationIndex2 !== -1))
-    ) {
-      deep--;
-      oneShort = false;
-      if (deep === 0) {
-        currentIndex = 0;
-      }
+    if (deep === 0) {
+      currentIndex = 0;
+      copyLines[copyLines.length - 1].thisVarIndex = 999999;
+      continue;
     }
     if (deep === 1) {
       // incase this line has not "," but move to the top, will have a error
@@ -170,8 +121,8 @@ export const processData = (
     const isshow = renderFunc.match(reg);
     if (!isshow) {
       // if (deep === 1) {
-        copyLines[copyLines.length - 1].thisVarIndex = 99999;
-        currentIndex = 99999;
+      copyLines[copyLines.length - 1].thisVarIndex = 99999;
+      currentIndex = 99999;
       // }
       continue;
     }
