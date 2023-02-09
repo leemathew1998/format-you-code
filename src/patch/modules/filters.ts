@@ -55,7 +55,7 @@ export const processFilters = (
         }
       }
     }
-    if (deep === 0) {
+    if (deep === 0 && item.textCopy.length > 0) {
       patchLastComma(item);
       copyLines[copyLines.length - 1].text = item.text;
       currentIndex = 999999;

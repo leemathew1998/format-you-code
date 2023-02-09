@@ -29,6 +29,8 @@ export const processData = (
   let isEnterReturn = false;
   let oneShort = false;
   let notEmptyData: needFixVariableType[] = [];
+  let hackTrick: any = [false, false];
+  let hackTrickCopy: any = [false, false];
   for (let index = 0; index < needFixVariable.length; index++) {
     const CE = isCommentOrEmpty(needFixVariable[index]);
     // if (CE !== IS_EMPTY) {
@@ -39,7 +41,6 @@ export const processData = (
 
   for (let index = 0; index < notEmptyData.length; index++) {
     const item = notEmptyData[index];
-    // debugger;
     copyLines.push({
       text: item.text,
       thisVarIndex: currentIndex,
@@ -78,19 +79,52 @@ export const processData = (
         }
       }
     }
-    if (deep === 0) {
+    if (deep === 0 && item.textCopy.length > 0) {
       currentIndex = 0;
       copyLines[copyLines.length - 1].thisVarIndex = 999999;
       continue;
     }
     if (deep === 1) {
-      // incase this line has not "," but move to the top, will have a error
-      copyLines[copyLines.length - 1].text = patchLastCommaForData(
-        copyLines[copyLines.length - 1].text
-      );
+      //data module have a little different, if one line is so long that need to be split in mutil lines
+      //so we only need to patch the last line,
+      /**
+       * example1: url:
+       *            'https://longlonglonglonglongUrl.com'
+       * example2: word: `
+       *  ..............
+       *  ..............
+       *  `
+       * we need to patch the last line of example1 and example2
+       */
+      console.log(item.textCopy[item.textCopy.length - 1]);
+      if (item.textCopy[item.textCopy.length - 1] === ":") {
+        hackTrick[0] = true;
+      } else {
+        hackTrick[0] = false;
+      }
+      const temp = item.textCopy.match(/`/g);
+      if (temp && temp?.length % 2) {
+        hackTrick[1] = !hackTrick[1];
+      }
+      if (!hackTrick[0] && !hackTrick[1]) {
+        copyLines[copyLines.length - 1].text = patchLastCommaForData(
+          copyLines[copyLines.length - 1].text
+        );
+      } else {
+        hackTrickCopy = [...hackTrick];
+      }
+
+      //  else {
+      //   copyLines[copyLines.length - 1].text = patchLastCommaForData(
+      //     copyLines[copyLines.length - 1].text
+      //   );
+      // }
     }
     let variableName = item.text.match(/(\w+)\s*[:|,]/);
-
+    if ((hackTrickCopy[0] && !hackTrick[0]) || hackTrickCopy[1]) {
+      hackTrickCopy = [...hackTrick];
+      continue;
+    }
     if (!oneShort && deep > 1) {
       continue;
     }
@@ -100,6 +134,7 @@ export const processData = (
     if (!variableName) {
       continue;
     }
+
     if (item.CE === IS_STRING && deep <= 2) {
       // debugger;
       returnParams.push({

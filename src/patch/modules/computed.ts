@@ -65,12 +65,12 @@ export const processComputed = (
         }
       }
     }
-    if (deep === 0) {
+    if (deep === 0 && item.textCopy.length > 0) {
       patchLastComma(item);
       copyLines[copyLines.length - 1].text = item.text;
       currentIndex = 999999;
     }
-    
+
     //match two type: xxx(){、xxx(args){
     let variableName = item.textCopy.match(/(\w+)\((\w+)?\)\{/);
 

@@ -11,4 +11,4 @@ const patchLastCommaForMethods = (str) => {
   const str2 = str.substring(index);
   return str1.endsWith(',') ? `${str1}${str2}` : `${str1},${str2}`;
 };
-console.log(patchLastCommaForMethods('setOptions({ expectedData, actualData } = {}) {'))
+// console.log(patchLastCommaForMethods('setOptions({ expectedData, actualData } = {}) {'))
