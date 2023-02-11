@@ -4,7 +4,7 @@ import { isCommentOrEmpty } from "../../utils/functions";
 
 export const processLifeCycle = (
   moduleLines: needFixVariableType[],
-  range: rangeTye,
+  range: any,
   name: string,
   priorityList
 ) => {

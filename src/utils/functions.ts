@@ -93,7 +93,10 @@ const patchLastComma = (item) => {
         }
       }
     } else {
-      if (trim0Temp[trim0Temp.length - 1] !== ",") {
+      if (trim0Temp.length === 0) {
+        temp[1] = "//" + temp[1];
+        item.text = temp.join("");
+      } else if (trim0Temp[trim0Temp.length - 1] !== ",") {
         temp[0] += ",";
         temp[1] = "//" + temp[1];
         item.text = temp.join("");
@@ -155,10 +158,9 @@ const patchLastCommaForMethods = (str) => {
       }
     }
   }
-  console.log(str);
   return str;
 };
-patchLastCommaForMethods('nihao//nihao')
+// patchLastCommaForMethods('nihao//nihao')
 const patchLastCommaForSquareBracket = (item) => {
   if (item.text.indexOf("*") !== -1) {
     return;
@@ -206,5 +208,5 @@ export {
   isCommentOrEmpty,
   patchLastComma,
   patchLastCommaForSquareBracket,
-  patchLastCommaForData
+  patchLastCommaForData,
 };

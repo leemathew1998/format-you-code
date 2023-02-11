@@ -1,5 +1,3 @@
-const vscode = require("vscode");
-import { TextEditorEdit } from "vscode";
 import { needFixVariableType, sortImportType } from "../type";
 import { mergeSameImport } from "../utils/sortImport";
 const sortImport = (imports: any) => {
@@ -22,39 +20,66 @@ const sortImport = (imports: any) => {
       component: [],
     },
     other: [],
+    temp: [],
   };
-  const chunk = lines.reduce((out: any, { text, lineNumber }) => {
+  let deep = null;
+  for (let i = 0; i < lines.length; i++) {
+    const { text } = lines[i];
+    const arr = text.match(/({|})/g);
+
+    let type;
+    let scope;
     if (text.match(/^import/)) {
-      let type = text.match(/@/)
-        ? "share"
-        : text.match(/~/)
-        ? "local"
-        : "global";
-      let scope = text.match(/(com|component)/i)
+      if (arr && arr.length === 1 && arr[0] === "{") {
+        chunkObj.temp.push(text);
+        continue;
+      }
+      type = text.match(/@/) ? "share" : text.match(/~/) ? "local" : "global";
+      scope = text.match(/(com|component)/i)
         ? "component"
         : text.match(/mixin/i)
         ? "mixin"
         : "lib";
-      out[type][scope].push(text);
+      chunkObj[type][scope].push(text);
+    } else if (
+      text.match(/from/) &&
+      arr &&
+      arr.length === 1 &&
+      arr[0] === "}" &&
+      chunkObj.temp.length
+    ) {
+      chunkObj.temp.push(text);
+      type = text.match(/@/) ? "share" : text.match(/~/) ? "local" : "global";
+      scope = text.match(/(com|component)/i)
+        ? "component"
+        : text.match(/mixin/i)
+        ? "mixin"
+        : "lib";
+      const shiftLines = [...chunkObj.temp];
+      chunkObj.temp.length = 0;
+      chunkObj[type][scope].push(...shiftLines);
+    } else if (chunkObj.temp.length) {
+      chunkObj.temp.push(text);
+      continue;
     } else {
-      out.other.push(text);
+      chunkObj.other.push(text);
     }
+  }
 
-    return out;
-  }, chunkObj);
-
-  mergeSameImport(chunk);
+  mergeSameImport(chunkObj);
   let linesCopy: needFixVariableType[] = [];
-  Object.entries(chunk).forEach((item) => {
+  Object.entries(chunkObj).forEach((item) => {
     if (!Array.isArray(item[1])) {
       Object.entries(item[1]!).forEach((arr) => {
-        arr[1].forEach((text) => {
-          linesCopy.push({
-            text,
-            lineNumber: firstLineNumber,
+        if (Array.isArray(arr[1])) {
+          arr[1].forEach((text) => {
+            linesCopy.push({
+              text,
+              lineNumber: firstLineNumber,
+            });
+            firstLineNumber++;
           });
-          firstLineNumber++;
-        });
+        }
       });
     } else {
       item[1].forEach((text) => {
@@ -67,17 +92,6 @@ const sortImport = (imports: any) => {
     }
   });
   imports.import = linesCopy;
-  const res =
-    linesCopy
-      .filter((i) => i.text.length)
-      .map((item) => item.text)
-      .join("\n") + "\n";
-  // return vscode.window.activeTextEditor.edit((builder: TextEditorEdit) => {
-  //   builder.delete(
-  //     new vscode.Range(imports.importRange[0], imports.importRange[1])
-  //   );
-  //   builder.insert(imports.importRange[0], res);
-  // });
 };
 
 export default sortImport;

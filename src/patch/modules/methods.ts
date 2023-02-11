@@ -10,7 +10,6 @@ export const processMethods = (
   moduleLines: needFixVariableType[],
   range: rangeTye,
   renderFunc: string,
-  priorityList
 ) => {
   /**
    * slice data part
@@ -28,6 +27,7 @@ export const processMethods = (
   let currentIndex = 999999; //init value
   let deep = 0;
   let copyLines: needFixVariableType[] = [];
+  //需要首先先把
   for (let index = 0; index < needFixVariable.length; index++) {
     const item = needFixVariable[index];
     // const CE = isCommentOrEmpty(item);
@@ -76,14 +76,8 @@ export const processMethods = (
     if (!variableName || deep > 1) {
       continue;
     }
-    //If a parameter is prioritized/lagged,
-    //it needs to be added at the start or end of the render string(renderFunc)
-    if (priorityList.first.includes(variableName[1])) {
-      //prioritized
-      renderFunc = ` ${variableName[1]} ` + renderFunc;
-    } else if (priorityList.third.includes(variableName[1])) {
-      //anti-priority
-      renderFunc += ` ${variableName[1]} `;
+    if (variableName[1].includes("async")) {
+      variableName[1] = variableName[1].split("async")[1];
     }
 
     const reg = new RegExp(`\\b${variableName[1]}\\b`, "g");

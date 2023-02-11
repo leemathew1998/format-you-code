@@ -6,7 +6,6 @@ export const processProps = (
   moduleLines: needFixVariableType[],
   range: rangeTye,
   renderFunc: string,
-  priorityList
 ): string[] => {
   /**
    * slice data part
@@ -53,15 +52,6 @@ export const processProps = (
     let map = new Map();
     for (let index = 0; index < props.length; index++) {
       const item = props[index];
-      //If a parameter is prioritized/lagged,
-      //it needs to be added at the start or end of the render string(renderFunc)
-      if (priorityList.first.includes(item)) {
-        //prioritized
-        renderFunc = ` ${item} ` + renderFunc;
-      } else if (priorityList.third.includes(item)) {
-        //anti-priority
-        renderFunc += ` ${item} `;
-      }
       returnParams.push({
         name: item,
         thisVarIndex: 999999,
@@ -153,15 +143,6 @@ export const processProps = (
 
       if (!variableName || deep > 1) {
         continue;
-      }
-      //If a parameter is prioritized/lagged,
-      //it needs to be added at the start or end of the render string(renderFunc)
-      if (priorityList.first.includes(variableName[1])) {
-        //prioritized
-        renderFunc = ` ${variableName[1]} ` + renderFunc;
-      } else if (priorityList.third.includes(variableName[1])) {
-        //anti-priority
-        renderFunc += ` ${variableName[1]} `;
       }
 
       const reg = new RegExp(`\\b${variableName[1]}\\b`, "g");

@@ -1,17 +1,13 @@
-const vscode = require("vscode");
-import { TextEditorEdit } from "vscode";
 import { lifeCycleArr } from "../utils/constants";
 import * as modules from "./modules";
 
-const patchData = (moduleLines: any, hasModules: any, renderFunc: any) => {
+const patchData = (
+  moduleLines: any,
+  hasModules: any,
+  lifeCycleStart: any,
+  renderFunc: any
+) => {
   const hasModulesKeys = Object.keys(hasModules);
-  //首先确定好开始和结束
-  let start = new vscode.Position(moduleLines[0].lineNumber, 0);
-  let lastLine = moduleLines.length + moduleLines[0].lineNumber - 1;
-  let end = new vscode.Position(
-    lastLine,
-    moduleLines[moduleLines.length - 1].text.length
-  );
   let priorityList = {};
   //hasModulesKeys中需要先遍历完lifeCycleArr，然后再处理别的参数
   const lifeCycleFirst = hasModulesKeys.filter((key) => {
@@ -20,22 +16,13 @@ const patchData = (moduleLines: any, hasModules: any, renderFunc: any) => {
     }
   });
   lifeCycleFirst.forEach((key) => {
-    let startIndex = 0;
-    const moduleItem = moduleLines.find((item: any, index) => {
-      if (item.text.match(new RegExp(`^\\s*${key}\\s*`))) {
-        startIndex = index;
-        return true;
-      }
-      return false;
-    });
     const range = {
-      startLine: moduleItem.lineNumber,
-      startCharacter: 0,
-      endLine: moduleItem.lineNumber + hasModules[key].length - 1,
-      endCharacter:
-        moduleLines[startIndex + hasModules[key].length - 1].text.length,
-      trueStartIndex: startIndex,
-      trueEndIndex: startIndex + hasModules[key].length - 1,
+      trueStartIndex: lifeCycleStart[key] - moduleLines[0].lineNumber,
+      trueEndIndex:
+        lifeCycleStart[key] -
+        moduleLines[0].lineNumber +
+        hasModules[key].length -
+        1,
     };
     modules.processLifeCycle(moduleLines, range, key, priorityList);
   });
@@ -55,10 +42,13 @@ const patchData = (moduleLines: any, hasModules: any, renderFunc: any) => {
       temp.third.push(...value);
     }
   });
-  temp.first = Array.from(new Set(temp.first)).reverse();
-  temp.second = Array.from(new Set(temp.second)).reverse();
-  temp.third = Array.from(new Set(temp.third)).reverse();
-  priorityList = temp;
+  temp.first = Array.from(new Set(temp.first));
+  temp.second = Array.from(new Set(temp.second));
+  temp.third = Array.from(new Set(temp.third));
+  renderFunc = ` ${temp.first.join(" ")} ` + renderFunc;
+  renderFunc += ` ${temp.third.join(" ")} `;
+
+
   let dataParams: string[] = [];
   let propsParams: string[] = [];
   let computedParams: string[] = [];
@@ -89,10 +79,9 @@ const patchData = (moduleLines: any, hasModules: any, renderFunc: any) => {
         moduleLines,
         range,
         renderFunc,
-        priorityList
       );
     } else if (key === "methods") {
-      modules.processMethods(moduleLines, range, renderFunc, priorityList);
+      modules.processMethods(moduleLines, range, renderFunc);
     } else if (key === "components") {
       modules.processComponents(moduleLines, range, renderFunc);
     } else if (key === "filters") {
@@ -104,14 +93,12 @@ const patchData = (moduleLines: any, hasModules: any, renderFunc: any) => {
         moduleLines,
         range,
         renderFunc,
-        priorityList
       );
     } else if (key === "computed") {
       computedParams = modules.processComputed(
         moduleLines,
         range,
         renderFunc,
-        priorityList
       );
     } else if (key === "watch") {
       modules.processWatch(
@@ -123,13 +110,17 @@ const patchData = (moduleLines: any, hasModules: any, renderFunc: any) => {
       );
     }
   }
-  //结束
-  // const res = moduleLines.map((item) => item.text).join("\n");
-  // console.log(res);
-  // return vscode.window.activeTextEditor.edit((builder: TextEditorEdit) => {
-  //   builder.delete(new vscode.Range(start, end));
-  //   builder.insert(start, res);
-  // });
 };
 
 export default patchData;
+
+/**
+ * on:{"click":handleAddRole}},
+ * on:{"click":function($event){return handleEdit(scope)}}
+ * ,attrs:{"data":rolesList,"border":""}},
+ * "click":function($event){return handleDelete(scope)}}
+ * {attrs:{"visible":dialogVisible,"titl
+ * ,e":dialogType === 'edit' ? 'Edit Role' : 'New Role'},
+ * on:{"update:visible":function($event){dialogVisible=$event}}}
+ * {attrs:{"model":role,"lab
+ */

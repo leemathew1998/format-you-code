@@ -23,6 +23,7 @@ export interface sortImportType {
   share: sortImportTypeBase;
   local: sortImportTypeBase;
   other: Array<string>;
+  temp: Array<string>;
 }
 
 export interface sortCssType {

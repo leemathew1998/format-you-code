@@ -11,40 +11,29 @@ let formatOneFile = vscode.commands.registerCommand(
   "format-you-code.file",
   async () => {
     await vscode.commands.executeCommand("editor.action.formatDocument");
-    const res = vscode.window.activeTextEditor;
-    if (!res!.document) {
+    const activeTextEditor = vscode.window.activeTextEditor;
+    if (!activeTextEditor!.document) {
       return;
     }
-    if (res!.document.languageId !== "vue") {
+    if (activeTextEditor!.document.languageId !== "vue") {
       vscode.window.showErrorMessage("当前文件不是vue文件");
     }
-    const scope = parserFile(res!.document);
+    const scope = parserFile(activeTextEditor!.document);
 
     if (scope.script.import.length) {
-      const temp = scope.script.import;
-      // scope.script.importRange = [
-      //   new vscode.Position(temp[0].lineNumber, 0),
-      //   new vscode.Position(
-      //     temp[temp.length - 1].lineNumber,
-      //     temp[temp.length - 1].text.length
-      //   ),
-      // ];
       sortImport(scope.script);
     }
     // if (scope.style.length) {
     //   await sortCss(scope.style, scope.template);
     // }
     if (scope.script.module.length > 2) {
-      const temp = scope.script.module;
-      // scope.script.moduleRange = [
-      //   new vscode.Position(temp[0].lineNumber, 0),
-      //   new vscode.Position(
-      //     temp[temp.length - 1].lineNumber,
-      //     temp[temp.length - 1].text.length
-      //   ),
-      // ];
-      const hasModules = sortModule(scope.script);
-      patchData(scope.script.module, hasModules, scope.ast.render); //开始遍历全部module部分，对每一个小模块进行排序
+      const { returnParams, returnParamsRange } = sortModule(scope.script);
+      patchData(
+        scope.script.module,
+        returnParams,
+        returnParamsRange,
+        scope.ast.render
+      ); //开始遍历全部module部分，对每一个小模块进行排序
     }
     //start flash
     let state1: any = [...scope.script.import, ...scope.script.module];
@@ -57,7 +46,8 @@ let formatOneFile = vscode.commands.registerCommand(
       .filter((i) => i.text.length)
       .map((item) => item.text)
       .join("\n");
-    await vscode.window.activeTextEditor!.edit((builder: TextEditorEdit) => {
+    // console.log(state1)
+    await activeTextEditor!.edit((builder: TextEditorEdit) => {
       builder.delete(new vscode.Range(start, end));
       builder.insert(start, state1);
     });

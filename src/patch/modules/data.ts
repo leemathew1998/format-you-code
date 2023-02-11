@@ -5,7 +5,6 @@ export const processData = (
   moduleLines: needFixVariableType[],
   range: rangeTye,
   renderFunc: string,
-  priorityList
 ): Array<string> => {
   /**
    * slice data part
@@ -96,7 +95,6 @@ export const processData = (
        *  `
        * we need to patch the last line of example1 and example2
        */
-      console.log(item.textCopy[item.textCopy.length - 1]);
       if (item.textCopy[item.textCopy.length - 1] === ":") {
         hackTrick[0] = true;
       } else {
@@ -141,16 +139,6 @@ export const processData = (
         name: variableName[1],
         thisVarIndex: 999999,
       });
-    }
-
-    //If a parameter is prioritized/lagged,
-    //it needs to be added at the start or end of the render string(renderFunc)
-    if (priorityList.first.includes(variableName[1])) {
-      //prioritized
-      renderFunc = ` ${variableName[1]} ` + renderFunc;
-    } else if (priorityList.third.includes(variableName[1])) {
-      //anti-priority
-      renderFunc += ` ${variableName[1]} `;
     }
     const reg = new RegExp(`\\b${variableName[1]}\\b`, "g");
     const isshow = renderFunc.match(reg);

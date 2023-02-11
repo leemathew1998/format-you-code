@@ -3,11 +3,12 @@ import { TextEditorEdit } from "vscode";
 import { needFixVariableType } from "../type";
 import { IS_EMPTY } from "../utils/constants";
 import { isCommentOrEmpty, patchLastComma } from "../utils/functions";
-const sortModule = (script) => {
+const sortModule = (script): any => {
   let lines = script.module;
   let firstLineNumber = lines[0].lineNumber;
   let copyLines: needFixVariableType[] = [];
   const returnParams: any = {};
+  let returnParamsRange: any = {};
   let currentIndex = 999999; //init value
   let currentName = "";
   let deep = 0;
@@ -89,10 +90,15 @@ const sortModule = (script) => {
     if (!regVal || deep > 1) {
       continue;
     }
+    if (regVal[1].includes("async")) {
+      regVal[1] = regVal[1].split("async")[1];
+    }
     const indexFromScopes = scopes.indexOf(regVal[1]);
     if (indexFromScopes !== -1) {
       copyLines[copyLines.length - 1].thisVarIndex = indexFromScopes;
       currentIndex = indexFromScopes;
+    } else {
+      continue;
     }
     if (
       !returnParams.hasOwnProperty(regVal[1]) &&
@@ -100,6 +106,7 @@ const sortModule = (script) => {
     ) {
       currentName = regVal[1];
       returnParams[regVal[1]] = [];
+      returnParamsRange[regVal[1]] = item.text;
     }
     returnParams[currentName].push({
       text: copyLines[copyLines.length - 1],
@@ -138,14 +145,22 @@ const sortModule = (script) => {
   }
   //start sort
   copyLines.sort((a, b) => a.thisVarIndex! - b.thisVarIndex!);
+  const temp = {};
   copyLines.forEach((item) => {
     item.lineNumber = firstLineNumber;
+    for (let key in returnParamsRange) {
+      if (returnParamsRange[key] === item.text) {
+        temp[key] = item.lineNumber;
+        delete returnParamsRange[key];
+      }
+    }
     firstLineNumber!++;
     delete item.thisVarIndex;
   });
+  returnParamsRange = temp;
   script.module = copyLines;
 
-  return returnParams;
+  return { returnParams, returnParamsRange };
 };
 
 export default sortModule;
