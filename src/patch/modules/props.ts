@@ -5,7 +5,7 @@ import { isCommentOrEmpty, patchLastComma } from "../../utils/functions";
 export const processProps = (
   moduleLines: needFixVariableType[],
   range: rangeTye,
-  renderFunc: string,
+  renderFunc: string
 ): string[] => {
   /**
    * slice data part
@@ -91,6 +91,7 @@ export const processProps = (
     let firstLineNumber = needFixVariable[0].lineNumber;
     let currentIndex = 999999; //init value
     let deep = 0;
+    let oneShort = false;
     let copyLines: needFixVariableType[] = [];
 
     for (let index = 0; index < needFixVariable.length; index++) {
@@ -130,8 +131,10 @@ export const processProps = (
             break;
           } else if (arr[key] === "{" || arr[key] === "[") {
             deep++;
+            oneShort = true;
           } else if (arr[key] === "}" || arr[key] === "]") {
             deep--;
+            oneShort = false;
           }
         }
       }
@@ -143,6 +146,12 @@ export const processProps = (
 
       if (!variableName || deep > 1) {
         continue;
+      }
+      if (!oneShort) {
+        continue;
+      }
+      if (oneShort) {
+        oneShort = false;
       }
 
       const reg = new RegExp(`\\b${variableName[1]}\\b`, "g");
