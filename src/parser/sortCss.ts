@@ -24,15 +24,16 @@ const sortCss = async (cssModules, ast) => {
         from: undefined,
         to: undefined,
       });
-      return vscode.window.activeTextEditor.edit((builder: TextEditorEdit) => {
-        let start = new vscode.Position(range.startLine, range.startCharacter);
-        let end = new vscode.Position(range.endLine, range.endCharacter);
-        builder.delete(new vscode.Range(start, end));
-        builder.insert(
-          new vscode.Position(range.startLine, range.startCharacter),
-          resultCssFromNano.css
-        );
-      });
+      // console.log(resultCssFromNano.css)
+      // return vscode.window.activeTextEditor.edit((builder: TextEditorEdit) => {
+      //   let start = new vscode.Position(range.startLine, range.startCharacter);
+      //   let end = new vscode.Position(range.endLine, range.endCharacter);
+      //   builder.delete(new vscode.Range(start, end));
+      //   builder.insert(
+      //     new vscode.Position(range.startLine, range.startCharacter),
+      //     resultCssFromNano.css
+      //   );
+      // });
     }
   }
 };

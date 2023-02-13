@@ -23,9 +23,6 @@ let formatOneFile = vscode.commands.registerCommand(
     if (scope.script.import.length) {
       sortImport(scope.script);
     }
-    // if (scope.style.length) {
-    //   await sortCss(scope.style, scope.template);
-    // }
     if (scope.script.module.length > 2) {
       const { returnParams, returnParamsRange } = sortModule(scope.script);
       patchData(
@@ -35,6 +32,9 @@ let formatOneFile = vscode.commands.registerCommand(
         scope.ast.render
       ); //开始遍历全部module部分，对每一个小模块进行排序
     }
+    // if (scope.style.length) {
+    //   sortCss(scope.style, scope.template);
+    // }
     //start flash
     let state1: any = [...scope.script.import, ...scope.script.module];
     let start = new vscode.Position(state1[0].lineNumber, 0);
@@ -53,6 +53,11 @@ let formatOneFile = vscode.commands.registerCommand(
     });
     setTimeout(async () => {
       await vscode.commands.executeCommand("editor.action.formatDocument");
+      //重置选中行到第一行state1[0].lineNumber,0的地方
+      // await activeTextEditor!.selection = new vscode.Selection(
+      //   new vscode.Position(state1[0].lineNumber, 0),
+      //   new vscode.Position(state1[0].lineNumber, 0)
+      // );
     }, 200);
 
     // vscode.window.showInformationMessage("format-one-file");
