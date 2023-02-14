@@ -1,7 +1,7 @@
 const vscode = require("vscode");
 import { TextEditorEdit } from "vscode";
 import { needFixVariableType } from "../type";
-import { IS_EMPTY } from "../utils/constants";
+import { IS_EMPTY, scopes } from "../utils/constants";
 import { isCommentOrEmpty, patchLastComma } from "../utils/functions";
 const sortModule = (script): any => {
   let lines = script.module;
@@ -16,33 +16,6 @@ const sortModule = (script): any => {
   //the deep not really add because this line have '{' and '}'
   //to avoid this case,deep++ or deep-- both trigger hackTrick add one
   let hackTrick = 0;
-  const scopes = [
-    "el",
-    "name",
-    "components",
-    "filters",
-    "mixins",
-    "layout",
-    "middleware",
-    "validate",
-    "model",
-    "props",
-    "directives",
-    "fetch",
-    "data",
-    "setup",
-    "head",
-    "computed",
-    "watch",
-    "beforeCreate",
-    "created",
-    "beforeMount",
-    "mounted",
-    "beforeDestroy",
-    "methods",
-    "fetchOnServer",
-    "render",
-  ];
 
   for (let index = 0; index < lines.length; index++) {
     const item = lines[index];

@@ -1,71 +1,158 @@
-# format-you-code README
+# Format Vue Style Code
 
-This is the README for your extension "format-you-code". After writing up a brief description, we recommend including the following sections.
+<!-- English User can go to here ☞ [git-emoji Commit](https://github.com/maixiaojie/git-emoji) -->
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+### 1️⃣ 重排 import 文件顺序 ✅
 
-For example if there is an image subfolder under your extension project workspace:
+<table style="display:flex">
+<tbody style="flex:1;display:flex;flex-direction: column;">
+  <tr style="display:flex">
+    <th style="flex:1">重排前</th>
+    <th style="flex:1">重排后</th>
+  </tr>
+    <tr style="display:flex">
+<td style="width:50%">
 
-\!\[feature X\]\(images/feature-x.png\)
+```js
+import App from "./App.vue";
+import { func1 } from "@/utils/func.js";
+import { func2 } from "@/utils/func.js";
+import Vue from "vue";
+```
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+</td>
+<td style="width:50%">
 
-## Requirements
+```js
+import Vue from "vue";
+import { func1, func2 } from "@/utils/func.js";
+import App from "./App.vue";
+```
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+</td>
+  </tr>
+</tbody>
 
-## Extension Settings
+</table>
+引入文件将会按照以下规则进行排序，并且自动去除重复引入的文件。
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+- 1. 依赖文件
+- 2. 带有`@`或者`~`的引入文件
+- 3. 相对路径引入的文件
 
-For example:
+### 2️⃣ 对 Vue2 中的 option API 写法进行格式化 ✅
 
-This extension contributes the following settings:
+<table style="display:flex">
+<tbody style="flex:1;display:flex;flex-direction: column;">
+  <tr style="display:flex">
+    <th style="flex:1">重排前</th>
+    <th style="flex:1">重排后</th>
+  </tr>
+    <tr style="display:flex">
+<td style="flex:1">
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+```js
+export default {
+  methods: {    3️⃣
+    func1() {},
+  },
+  data() {      2️⃣
+    return {};
+  },
+  name: "App",  1️⃣
+};
+```
 
-## Known Issues
+</td>
+<td style="flex:1">
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+```js
+export default {
+  name: "App",  1️⃣
+  data() {      2️⃣
+    return {};
+  },
+  methods: {    3️⃣
+    func1() {},
+  },
+};
+```
 
-## Release Notes
+</td>
+  </tr>
+</tbody>
 
-Users appreciate release notes as you update your extension.
+</table>
 
-### 1.0.0
+将按照 [name、components...](https://github.com/leemathew1998/format-you-code/blob/main/src/utils/constants.ts) 进行排序。
 
-Initial release of ...
+### 3️⃣ 对 data 等 [option](https://github.com/leemathew1998/format-you-code/tree/main/src/patch/modules) 中的内容进行排序 ✅
 
-### 1.0.1
+<table style="display:flex">
+<tbody style="flex:1;display:flex;flex-direction: column;">
+  <tr style="display:flex">
+    <th style="flex:1">template part</th>
+    <th style="flex:1">script part</th>
+  </tr>
+    <tr style="display:flex">
+<td style="flex:1">
 
-Fixed issue #.
+```html
+<template>
+  <div>
+    <div>{{ a }}</div>
+    <div>{{ b }}</div>
+  </div>
+</template>
+```
 
-### 1.1.0
+</td>
+<td style="flex:1">
 
-Added features X, Y, and Z.
+```js
+export default {
+  data() {
+    return {
+        b: 2,
+        a: 1,
+    };
+  },
+  created() {
+    console.log(this.b)
+  },
+};
+```
 
----
+</td>
+  </tr>
+</tbody>
 
-## Following extension guidelines
+</table>
 
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
+- 在此例子中，`data` 中的 `a: 1` 将会被放到 `b: 2` 的前面；因为不管在template中还是其他option中，`a` 变量都是优先使用的。如果有冲突，那会以生命周期函数>template进行排序。
 
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
+## How to use
 
-## Working with Markdown
+- 右键菜单中的`Format You Code`选项
+- 快捷键：`ctrl + shift + p` 或者 `command + shift + p`，输入`Format You Code
 
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
+## Undone Features
 
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
+- [ ] 对 Vue3 中的 composition API 进行格式化
+- [ ] 代码重构
 
-## For more information
+## Download
 
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
+在 vscode 扩展中搜索 `Format Vue Style Code` 即可找到该插件。
 
-**Enjoy!**
+## Issues
+
+使用中遇到问题可以在这里提问。
+[https://github.com/leemathew1998/format-you-code/issues](https://github.com/leemathew1998/format-you-code/issues)
+
+## Sources
+
+插件源码，沟通交流在这里。
+[https://github.com/leemathew1998/format-you-code](https://github.com/leemathew1998/format-you-code)
