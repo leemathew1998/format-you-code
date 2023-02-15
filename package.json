@@ -1,6 +1,6 @@
 {
-  "name": "format-you-code",
-  "displayName": "format-you-code",
+  "name": "format-vue-style-code",
+  "displayName": "format-vue-style-code",
   "description": "",
   "version": "0.0.4",
   "azureCode": "hcz565yd55yii55qyk7654o5npzwutqvrwcktp2ckep6rc2fahqa",
@@ -13,12 +13,15 @@
   "activationEvents": [
     "onLanguage:vue"
   ],
+  "repository": {
+    "url": "https://github.com/leemathew1998"
+  },
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
         "command": "format-you-code.file",
-        "title": "Format Code Style"
+        "title": "Format Vue Style Code"
       }
     ],
     "menus": {
