@@ -2,13 +2,14 @@
   "name": "format-vue-style-code",
   "displayName": "format-vue-style-code",
   "description": "format、sort you vue2 code",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "icon": "icon.png",
   "publisher": "leemathew1998",
   "engines": {
     "vscode": "^1.74.0"
   },
   "categories": [
+    "Formatters",
     "Other"
   ],
   "activationEvents": [
@@ -23,6 +24,10 @@
       {
         "command": "format-you-code.file",
         "title": "Format Vue Style Code"
+      },
+      {
+        "command": "format-you-code.optionOrder",
+        "title": "format-vue-style-code: change option order"
       }
     ],
     "menus": {

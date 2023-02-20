@@ -1,9 +1,5 @@
-const vscode = require("vscode");
-import { TextEditorEdit } from "vscode";
 import { needFixVariableType } from "../type";
-import { IS_EMPTY, scopes } from "../utils/constants";
-import { isCommentOrEmpty, patchLastComma } from "../utils/functions";
-const sortModule = (script): any => {
+const sortModule = (script,scopes): any => {
   let lines = script.module;
   let firstLineNumber = lines[0].lineNumber;
   let copyLines: needFixVariableType[] = [];
