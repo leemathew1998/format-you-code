@@ -3,6 +3,7 @@
   "displayName": "format-vue-style-code",
   "description": "format、sort you vue2 code",
   "version": "0.0.4",
+  "icon": "icon.png",
   "engines": {
     "vscode": "^1.74.0"
   },
