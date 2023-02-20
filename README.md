@@ -12,7 +12,7 @@
     <th style="flex:1">重排前</th>
     <th style="flex:1">重排后</th>
   </tr>
-    <tr style="display:flex">
+    <tr style="display:flex;align-items:flex-start">
 <td style="width:50%">
 
 ```js
@@ -38,9 +38,9 @@ import App from "./App.vue";
 </table>
 引入文件将会按照以下规则进行排序，并且自动去除重复引入的文件。
 
-- 1. 依赖文件
-- 2. 带有`@`或者`~`的引入文件
-- 3. 相对路径引入的文件
+1. 依赖文件
+2. 带有`@`或者`~`的引入文件
+3. 相对路径引入的文件
 
 ### 2️⃣ 对 Vue2 中的 option API 写法进行格式化 ✅
 
@@ -50,7 +50,7 @@ import App from "./App.vue";
     <th style="flex:1">重排前</th>
     <th style="flex:1">重排后</th>
   </tr>
-    <tr style="display:flex">
+    <tr style="display:flex;align-items:flex-start">
 <td style="flex:1">
 
 ```js
@@ -96,7 +96,7 @@ export default {
     <th style="flex:1">template part</th>
     <th style="flex:1">script part</th>
   </tr>
-    <tr style="display:flex">
+    <tr style="display:flex;align-items:flex-start">
 <td style="flex:1">
 
 ```html
@@ -136,7 +136,7 @@ export default {
 ## How to use
 
 - 右键菜单中的`Format You Code`选项
-- 快捷键：`ctrl + shift + p` 或者 `command + shift + p`，输入`Format You Code
+- 快捷键：`ctrl + shift + p` 或者 `command + shift + p`，输入`Format You Code`
 
 ## Undone Features
 
