@@ -6,7 +6,7 @@
 
 ### 1️⃣ 重排 import 文件顺序 ✅
 
-<div style="display:flex;!important">
+<div id="container">
 <div style="width:50%;padding-right:2px;!important">
 <span style="margin:0 40%;!important">重排前</span>
 
@@ -30,6 +30,12 @@ let timer;
 ```
 </div>
 </div>
+
+<style>
+  #container{
+    display:flex;
+  }
+</style>
 
 
 引入文件将会按照以下规则进行排序，并且自动去除重复引入的文件。
