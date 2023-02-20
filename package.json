@@ -2,8 +2,9 @@
   "name": "format-vue-style-code",
   "displayName": "format-vue-style-code",
   "description": "format、sort you vue2 code",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "icon": "icon.png",
+  "publisher": "leemathew1998",
   "engines": {
     "vscode": "^1.74.0"
   },
@@ -14,7 +15,7 @@
     "onLanguage:vue"
   ],
   "repository": {
-    "url": "https://github.com/leemathew1998"
+    "url": "https://github.com/leemathew1998/format-you-code"
   },
   "main": "./out/extension.js",
   "contributes": {

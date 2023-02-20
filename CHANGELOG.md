@@ -4,6 +4,6 @@ All notable changes to the "format-you-code" extension will be documented in thi
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## [Unreleased]
+## [0.0.5]
 
-- Initial release
+- 完成对大部分内容的处理，第一个提交版本！
