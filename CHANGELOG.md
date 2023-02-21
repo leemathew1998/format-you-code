@@ -1,9 +1,8 @@
 # Change Log
 
-All notable changes to the "format-you-code" extension will be documented in this file.
+## [0.4.2]
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
-
+- 编写README.md，修复用户输入时按下esc键出现的报错
 ## [0.4.1]
 
 - 完成用户输入option顺序重新进行排序。

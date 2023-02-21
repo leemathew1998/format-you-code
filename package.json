@@ -2,7 +2,7 @@
   "name": "format-vue-style-code",
   "displayName": "format-vue-style-code",
   "description": "format、sort you vue2 code",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "icon": "icon.png",
   "publisher": "leemathew1998",
   "engines": {

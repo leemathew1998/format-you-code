@@ -64,24 +64,26 @@ let formatOneFile = vscode.commands.registerCommand(
 
 let changeOptionOrder = vscode.commands.registerCommand(
   "format-you-code.optionOrder",
-  async (aaa) => {
+  async () => {
     const res = await vscode.window.showInputBox({
       title: "请输入options的顺序，以英文逗号结尾",
     });
-    let userOptions = res.split(",");
-    const rest = scopes.filter((name) => !userOptions.includes(name));
-    userOptions.push(...rest);
-    context_.globalState.update("optionsOrder", userOptions);
+    if (res && res.split(",")) {
+      let userOptions = res.split(",");
+      const rest = scopes.filter((name) => !userOptions.includes(name));
+      userOptions.push(...rest);
+      context_.globalState.update("optionsOrder", userOptions);
+    }
   }
 );
 
 export function activate(context) {
-  // The command has been defined in the package.json file
+  // The command has been defined in the package.json 
   if (!context.globalState.get("optionsOrder")) {
     context.globalState.update("optionsOrder", scopes);
   }
 
   context_ = context;
   context.subscriptions.push(formatOneFile);
-  context.subscriptions.push(changeOptionOrder, "aaa");
+  context.subscriptions.push(changeOptionOrder);
 }

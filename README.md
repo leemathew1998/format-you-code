@@ -81,8 +81,11 @@ export default {
 </div>
 
 将按照 [name、components...等顺序](https://github.com/leemathew1998/format-you-code/blob/main/src/utils/constants.ts) 进行排列。
+- 如何修改默认顺序？
+快捷键：`ctrl + shift + p` 或者 `command + shift + p`，输入`format-vue-style-code: change option order`，输入你想要的排序即可。
 
 ### 3️⃣ 对 data 等 [options](https://github.com/leemathew1998/format-you-code/tree/main/src/patch/modules) 中的内容进行排序 ✅
+
 
 <div style="display:flex;">
 <div style="width:50%;padding-right:2px">
