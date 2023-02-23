@@ -108,8 +108,8 @@ export default {
 export default {
   data() {
     return {
-        b: 2,// => a: 1,
-        a: 1,// => b: 2,
+        b: 2,
+        a: 1,
     };
   },
   created() {
@@ -120,7 +120,12 @@ export default {
 </div>
 </div>
 
-- 在此例子中，`data` 中的 `a: 1` 将会被放到 `b: 2` 的前面；因为不管在template中还是其他option中，`a` 变量都是优先使用的。如果有冲突，那会以生命周期函数>template进行排序。
+- 在此例子中，`data` 中的 `a: 1` 将会被放到 `b: 2` 的前面；因为不管在template中还是生命周期函数中，`a` 变量都是优先使用的。如果有冲突，那会以生命周期函数 > template进行排序。
+
++ 此外，我们对日常使用的option（components、computed、data、filters、methods、props、watch）都进行了类似的排序:
+  +  第一个用到的component将会排在components的第一位置
+  +  第一个用到的method将会排在methods的第一位置
+  +  ......
 
 ## How to use
 

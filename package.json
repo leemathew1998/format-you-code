@@ -2,7 +2,7 @@
   "name": "format-vue-style-code",
   "displayName": "format-vue-style-code",
   "description": "format、sort you vue2 code",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "icon": "icon.png",
   "publisher": "leemathew1998",
   "engines": {
@@ -70,8 +70,6 @@
     "typescript": "^4.9.3"
   },
   "dependencies": {
-    "cssnano": "^5.1.14",
-    "postcss": "^8.4.21",
     "vue-template-compiler": "^2.7.14"
   }
 }

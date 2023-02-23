@@ -4,7 +4,7 @@ const vscode = require("vscode");
 import parserFile from "./parser/parserFile";
 import sortImport from "./parser/sortImport";
 import sortModule from "./parser/sortModule";
-import sortCss from "./parser/sortCss";
+// import sortCss from "./parser/sortCss";
 import patchData from "./patch/patchData";
 import { scopes } from "./utils/constants";
 import { TextEditorEdit } from "vscode";
